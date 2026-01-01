@@ -1,0 +1,19 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Sale extends Model
+{
+    protected $fillable = [
+        'table_number',
+        'total',
+        'paid'
+    ];
+
+    public function items()
+    {
+        return $this->hasMany(SaleItem::class);
+    }
+}

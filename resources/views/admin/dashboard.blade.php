@@ -256,10 +256,14 @@
       <div class="text-sm text-[color:var(--muted)]">{{ __('ui.items_stock') }}</div>
       <div class="mt-2 text-2xl font-semibold">{{ number_format($itemsInStock, 0, ',', '.') }}</div>
     </div>
-    <div class="cosmic-card p-4">
-      <div class="text-sm text-[color:var(--muted)]">{{ __('ui.reorder_need') }}</div>
-      <div class="mt-2 text-2xl font-semibold">{{ $lowStockAlerts }}</div>
-    </div>
+<div class="cosmic-card p-4 border-l-4 
+    @if($lowStockAlerts > 5) border-red-500 
+    @elseif($lowStockAlerts > 0) border-yellow-500 
+    @else border-transparent @endif">
+    
+    <div class="text-sm text-[color:var(--muted)]">{{ __('ui.reorder_need') }}</div>
+    <div class="mt-2 text-2xl font-semibold">{{ $lowStockAlerts }}</div>
+</div>
     <div class="cosmic-card p-4">
       <div class="text-sm text-[color:var(--muted)]">{{ __('ui.stock_value') }}</div>
       <div class="mt-2 text-2xl font-semibold">€{{ number_format($stockValue, 2, ',', '.') }}</div>

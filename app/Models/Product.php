@@ -34,6 +34,11 @@ public function stock()
     return $this->hasOne(\App\Models\StockItem::class);
 }
 
+  public function getPhotoUrlAttribute()
+    {
+        return $this->image_path ? asset('storage/' . $this->image_path) : null;
+    }
+
 
 }
 

@@ -34,6 +34,9 @@
     openExpenseModal: false,
     showDetailedList: false,
 
+    /* 📦 STOCK */
+    isCriticalStockModalOpen: false,
+
     /* Tema */
     theme: localStorage.getItem('cosmic-theme') || 'theme-dark',
 
@@ -170,16 +173,32 @@
 </div>
   <main class="max-w-7xl mx-auto px-4 py-6 space-y-8">
 
-    @if (session('success'))
-        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" x-transition class="p-4 rounded-xl text-green-900 flex items-center justify-between" style="background-color: var(--chip-ok-bg); border: 1px solid var(--chip-ok-bd);">
-            <p>{{ session('success') }}</p>
-            <button @click="show = false" class="text-xl">&times;</button>
-        </div>
-    @endif
 @if(auth()->user()->is_admin)
-    <section x-show="tab==='products'" x-transition>
-      <!-- KPIs -->
-      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<section x-show="tab==='products'" x-transition>
+
+    {{-- ALERTAS --}}
+    <div class="space-y-2 mb-4">
+        {{-- Sucesso --}}
+        @if(session('success'))
+            <div class="p-4 rounded bg-green-200 text-green-800">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        {{-- Erros de validação (inclui unique) --}}
+        @if($errors->any())
+            <div class="p-4 rounded bg-red-100 text-red-800">
+                <ul class="list-disc pl-5">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="cosmic-card p-4">
           <div class="text-sm text-[color:var(--muted)]">{{ __('ui.active_prod') }}</div>
           <div class="mt-2 text-2xl font-semibold">{{ $activeProducts }}</div>
@@ -196,37 +215,75 @@
           <div class="text-sm text-[color:var(--muted)]">{{ __('ui.avg_margin') }}</div>
           <div class="mt-2 text-2xl font-semibold">{{ $avgMargin }}</div>
         </div>
-      </div>
+    </div>
 
-      <!-- FILTERS -->
-      <form action="{{ route('admin.dashboard') }}" method="GET" class="mt-6 flex flex-wrap items-center gap-3">
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('ui.search_sku') }}"
-               class="w-full md:w-72 px-3 py-2 rounded-xl border border-[color:var(--border)]"
-               :class="theme==='theme-dark' ? 'bg-[rgba(2,6,23,.5)]' : 'bg-white/70'">
-        <select name="category_id" class="px-3 py-2 rounded-xl border border-[color:var(--border)]" :class="theme==='theme-dark' ? 'bg-[rgba(2,6,23,.5)]' : 'bg-white/70'" onchange="this.form.submit()">
-            <option value="">{{ __('ui.all_categories') }}</option>
-            @foreach ($categories as $category)
-                <option value="{{ $category->id }}" @if(request('category_id') == $category->id) selected @endif>{{ $category->name }}</option>
-            @endforeach
-        </select>
-        <button @click="isNewModalOpen = true" type="button" class="px-4 py-2 rounded-xl btn-accent">
-          {{ __('ui.new_product') }}
+    <!-- FILTERS -->
+<form action="{{ route('admin.dashboard') }}" method="GET" class="mt-6 flex flex-wrap items-center gap-3">
+    <input type="hidden" name="tab" value="products">
+
+    <div class="relative w-full md:w-72">
+        <input 
+            type="text" 
+            name="search" 
+            value="{{ request('search') }}" 
+            placeholder="{{ __('ui.search_sku') }}..."
+            class="w-full px-3 py-2 rounded-xl border border-[color:var(--border)] pr-10"
+            :class="theme==='theme-dark' ? 'bg-[rgba(2,6,23,.5)] text-white' : 'bg-white/70 text-gray-800'"
+        >
+        <button type="submit" class="absolute right-3 top-2.5 text-[color:var(--muted)]">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
         </button>
-      </form>
+    </div>
 
-      <!-- PRODUCT TABLE -->
-      <div class="mt-4 cosmic-card overflow-hidden">
+    <select 
+        name="category_id" 
+        class="px-3 py-2 rounded-xl border border-[color:var(--border)] outline-none" 
+        :class="theme==='theme-dark' ? 'bg-[rgba(2,6,23,.5)] text-white' : 'bg-white/70 text-gray-800'"
+        onchange="this.form.submit()"
+    >
+        <option value="">{{ __('ui.all_categories') }}</option>
+        @foreach ($categories as $category)
+            <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
+                {{ $category->name }}
+            </option>
+        @endforeach
+    </select>
+
+    @if(request('search') || request('category_id'))
+        <a href="{{ route('admin.dashboard', ['tab' => 'products']) }}" class="text-sm text-red-400 hover:underline">
+            {{ __('ui.clear_filters') ?? 'Limpar Filtros' }}
+        </a>
+    @endif
+
+    <div class="flex-1 text-right">
+        <button @click="isNewModalOpen = true" type="button" class="px-4 py-2 rounded-xl btn-accent font-semibold">
+         {{ __('ui.new_product') }}
+        </button>
+    </div>
+</form>
+
+    <!-- PRODUCT TABLE -->
+    <div class="mt-4 cosmic-card overflow-hidden">
         <div class="overflow-x-auto">
           <table class="min-w-full" style="background:transparent">
             <thead class="text-left text-sm border-b border-[color:var(--border)] text-[color:var(--muted)]">
-                <!-- Table headers -->
-                <tr><th class="px-4 py-3">{{__('ui.product')}}</th><th class="px-4 py-3">{{__('ui.sku')}}</th><th class="px-4 py-3">{{__('ui.category')}}</th><th class="px-4 py-3">{{__('ui.status')}}</th><th class="px-4 py-3 text-right">{{__('ui.actions')}}</th></tr>
+                <tr>
+                    <th class="px-4 py-3">{{__('ui.product')}}</th>
+                    <th class="px-4 py-3">{{__('ui.sku')}}</th>
+                    <th class="px-4 py-3">{{__('ui.category')}}</th>
+                    <th class="px-4 py-3">{{__('ui.status')}}</th>
+                    <th class="px-4 py-3 text-right">{{__('ui.actions')}}</th>
+                </tr>
             </thead>
             <tbody>
                 @forelse ($products as $product)
                 <tr class="border-t border-[color:var(--border)]" :class="theme==='theme-light' ? 'hover:bg-black/5' : 'hover:bg-white/5'">
                     <td class="px-4 py-3 font-medium whitespace-nowrap">{{ $product->name }}</td>
-                    <td class="px-4 py-3 whitespace-nowrap">{{ Str::upper(Str::substr($product->category->name, 0, 4)) .'-'. str_pad($product->id, 3, '0', STR_PAD_LEFT) }}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        {{ Str::upper(Str::substr($product->category->name, 0, 4)) .'-'. str_pad($product->id, 3, '0', STR_PAD_LEFT) }}
+                    </td>
                     <td class="px-4 py-3 whitespace-nowrap">{{ $product->category->name }}</td>
                     <td class="px-4 py-3 whitespace-nowrap">
                         @if ($product->status === 'active')<span class="chip-ok">Active</span>@else<span class="chip-warn">Inactive</span>@endif
@@ -239,14 +296,18 @@
                     </td>
                 </tr>
                 @empty
-                <tr class="border-t border-[color:var(--border)]"><td colspan="5" class="text-center py-6 text-[color:var(--muted)]">{{ __('ui.no_products_found') }}</td></tr>
+                <tr class="border-t border-[color:var(--border)]">
+                    <td colspan="5" class="text-center py-6 text-[color:var(--muted)]">{{ __('ui.no_products_found') }}</td>
+                </tr>
                 @endforelse
             </tbody>
           </table>
-      </div>
-      </div>
-    </section>
+        </div>
+    </div>
+</section>
+
 @endif
+
 @if(auth()->user()->is_admin)
 
 <section x-show="tab==='stock'" x-transition x-cloak>
@@ -282,11 +343,12 @@
 
   <!-- Botão Exportar Estoque Crítico -->
   <div class="mt-4 flex justify-end">
-   <form action="#" method="GET">
-    <button type="submit" class="btn btn-primary text-sm">
-        {{ __('ui.export_critical_stock') }}
-    </button>
-</form>
+  <button
+    @click="isCriticalStockModalOpen = true"
+    class="btn btn-primary text-sm"
+>
+    {{ __('ui.export_critical_stock') }}
+</button>
 
   </div>
 
@@ -351,6 +413,8 @@
   x-cloak
   x-data="{
     mesaAtiva: 1,
+    stockWarning: '',
+    search: '',
 
     mesas: JSON.parse(localStorage.getItem('mesas_pdv')) || {
       1: [], 2: [], 3: [], 4: [], 5: [],
@@ -361,10 +425,17 @@
       localStorage.setItem('mesas_pdv', JSON.stringify(this.mesas));
     },
 
-    // Nova função para limpar a mesa sem salvar venda
+    // Função de filtro corrigida (Busca por nome ou categoria)
+    match(name, category) {
+      if (!this.search) return true;
+      const term = this.search.toLowerCase();
+      return name.toLowerCase().includes(term) || category.toLowerCase().includes(term);
+    },
+
     clearTable() {
-      if(confirm('Deseja realmente limpar todos os itens desta mesa?')) {
+      if (confirm('Deseja realmente limpar todos os itens desta mesa?')) {
         this.mesas[this.mesaAtiva] = [];
+        this.stockWarning = '';
         this.save();
       }
     },
@@ -374,11 +445,20 @@
       const item = cart.find(i => i.id === product.id);
 
       if (item) {
+        if (item.qty >= product.stock) {
+          this.stockWarning = `⚠️ Só temos ${product.stock} unidades disponíveis`;
+          return;
+        }
         item.qty++;
       } else {
+        if (product.stock <= 0) {
+          this.stockWarning = '⚠️ Produto sem estoque disponível';
+          return;
+        }
         cart.push({ ...product, qty: 1 });
       }
 
+      this.stockWarning = '';
       this.save();
     },
 
@@ -388,8 +468,7 @@
     },
 
     total() {
-      return this.mesas[this.mesaAtiva]
-        .reduce((t, i) => t + (i.price * i.qty), 0);
+      return this.mesas[this.mesaAtiva].reduce((t, i) => t + (i.price * i.qty), 0);
     },
 
     async checkout() {
@@ -398,9 +477,7 @@
         return;
       }
 
-      if (!confirm('Confirmar finalização da venda?')) {
-        return;
-      }
+      if (!confirm('Confirmar finalização da venda?')) return;
 
       try {
         const response = await fetch('/admin/sales/checkout', {
@@ -418,27 +495,29 @@
         });
 
         const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || 'Erro desconhecido ao salvar venda');
-        }
+        if (!response.ok) throw new Error(data.error || 'Erro ao salvar venda');
 
         this.mesas[this.mesaAtiva] = [];
         this.save();
-
         alert('Venda finalizada com sucesso!');
-
-
         location.reload();
-
       } catch (error) {
-        console.error('Erro detalhado:', error);
         alert('Falha ao processar venda: ' + error.message);
       }
     }
   }"
   class="space-y-4"
 >
+
+  <div class="mb-4">
+    <input
+      type="text"
+      placeholder="{{ __('ui.search_product') }}"
+      x-model.debounce.300ms="search"
+      class="w-full md:w-80 px-4 py-2 rounded-xl border border-[color:var(--border)] focus:ring-2 focus:ring-accent outline-none"
+      :class="theme==='theme-dark' ? 'bg-[rgba(2,6,23,.5)] text-white' : 'bg-white/70 text-gray-800'"
+    >
+  </div>
 
   <div class="flex gap-2 flex-wrap">
     <template x-for="n in 10" :key="n">
@@ -457,35 +536,46 @@
     <div class="lg:col-span-3">
       <div class="grid sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
         @foreach($products as $product)
-          {{-- FILTRO DE ESTOQUE: Só renderiza se a quantidade for maior que zero --}}
-          @if(($product->stock->quantity ?? 0) > 0)
-            <div class="cosmic-card p-3 flex flex-col">
+          @php
+            $qty = $product->stock->quantity ?? 0;
+            $price = $product->stock->price ?? 0;
+            $catName = $product->category->name ?? 'Sem Categoria';
+          @endphp
+
+          @if($qty > 0)
+            <div
+              class="cosmic-card p-3 flex flex-col"
+              x-show="match('{{ addslashes($product->name) }}', '{{ addslashes($catName) }}')"
+            >
               <img
                 src="{{ $product->photo_url ?? '/img/placeholder.png' }}"
                 class="h-28 w-full object-cover rounded-lg mb-3"
+                alt="{{ $product->name }}"
               >
 
               <div class="flex-1">
                 <h3 class="font-semibold text-sm">{{ $product->name }}</h3>
                 <p class="text-xs text-[color:var(--muted)]">
-                  {{ $product->category->name }}
-                 <span class="block text-accent font-bold">
-    {{ __('ui.stock') }}: {{ $product->stock->quantity }}
-</span>
+                  {{ $catName }}
+                  <span class="block text-accent font-bold">
+                    {{ __('ui.stock') }}: {{ $qty }}
+                  </span>
                 </p>
               </div>
 
               <div class="mt-3 flex items-center justify-between">
                 <span class="font-semibold text-lg">
-                  €{{ number_format($product->stock->price ?? 0, 2, ',', '.') }}
+                  €{{ number_format($price, 2, ',', '.') }}
                 </span>
 
                 <button
                   class="btn btn-accent text-sm px-3 py-1"
                   @click="addToCart({
                     id: {{ $product->id }},
-                    name: '{{ $product->name }}',
-                    price: {{ $product->stock->price ?? 0 }}
+                    name: '{{ addslashes($product->name) }}',
+                    price: {{ $price }},
+                    stock: {{ $qty }},
+                    photo_url: '{{ $product->photo_url ?? '/img/placeholder.png' }}'
                   })"
                 >
                   {{ __('ui.add') }}
@@ -497,7 +587,7 @@
       </div>
     </div>
 
-    <div class="cosmic-card p-4 flex flex-col min-h-[400px]">
+    <div class="cosmic-card p-4 flex flex-col min-h-[500px] sticky top-4">
       <div class="flex justify-between items-center mb-4">
         <h2 class="font-semibold">
           {{ __('ui.order') }} – {{ __('ui.table') }} <span x-text="mesaAtiva"></span>
@@ -507,7 +597,7 @@
         </button>
       </div>
 
-      <div class="flex-1 space-y-3 overflow-auto">
+      <div class="flex-1 space-y-3 overflow-auto max-h-[400px]">
         <template x-if="!mesas[mesaAtiva].length">
           <p class="text-sm text-[color:var(--muted)] text-center py-10">
             {{ __('ui.empty_table') }}
@@ -516,12 +606,15 @@
 
         <template x-for="item in mesas[mesaAtiva]" :key="item.id">
           <div class="flex justify-between items-center text-sm border-b border-white/5 pb-2">
-            <div>
-              <p x-text="item.name" class="font-medium"></p>
-              <span class="text-xs text-[color:var(--muted)]">
-                €<span x-text="item.price.toFixed(2)"></span> ×
-                <span x-text="item.qty" class="text-white font-bold"></span>
-              </span>
+            <div class="flex items-center gap-2">
+              <img :src="item.photo_url" class="h-10 w-10 object-cover rounded-lg">
+              <div>
+                <p x-text="item.name" class="font-medium truncate w-24"></p>
+                <span class="text-xs text-[color:var(--muted)]">
+                  €<span x-text="item.price.toFixed(2)"></span> ×
+                  <span x-text="item.qty" class="text-white font-bold"></span>
+                </span>
+              </div>
             </div>
 
             <button
@@ -543,7 +636,8 @@
         </div>
 
         <button
-          class="btn btn-accent w-full py-3 font-bold shadow-lg shadow-accent/20"
+          class="btn btn-accent w-full py-3 font-bold shadow-lg shadow-accent/20 disabled:opacity-50"
+          :disabled="!mesas[mesaAtiva].length"
           @click="checkout()"
         >
           {{ __('ui.checkout') }}
@@ -703,6 +797,44 @@
         </p>
     @endif
 </div>
+<!-- Gráficos -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+
+    <!-- Resultado -->
+<!-- Resultado Financeiro -->
+<div class="cosmic-card p-4">
+    <h3 class="text-sm font-semibold mb-3 text-white">
+        📊 {{ __('ui.financial_result') }}
+    </h3>
+
+    <div class="relative h-56">
+        <canvas id="resultChart"></canvas>
+    </div>
+</div>
+
+<!-- Vendas x CMV x Despesas -->
+<div class="cosmic-card p-4">
+    <h3 class="text-sm font-semibold mb-3 text-white">
+        💰 {{ __('ui.sales_vs_costs') }}
+    </h3>
+
+    <div class="relative h-56">
+        <canvas id="financeChart"></canvas>
+    </div>
+</div>
+
+</div>
+
+<div class="cosmic-card p-4 mt-6">
+    <h3 class="text-sm font-semibold mb-3 text-white">
+        💡 {{ __('ui.expenses_by_category') }}
+    </h3>
+
+    <div class="relative h-64 max-w-md mx-auto">
+        <canvas id="expenseCategoryChart"></canvas>
+    </div>
+</div>
+
 
 <!-- Estoque -->
 <div class="cosmic-card p-4 mt-4">
@@ -717,6 +849,7 @@
         </span>
     </p>
 </div>
+</section>
 
 @endif
 
@@ -749,16 +882,16 @@
                 class="w-full rounded bg-white/10 text-white p-2"
             >
 
-            <select 
-                name="category" 
-                class="w-full rounded bg-white/10 text-white p-2"
-            >
-                <option value="agua">{{ __('ui.expense_water') }}</option>
-                <option value="luz">{{ __('ui.expense_electricity') }}</option>
-                <option value="aluguel">{{ __('ui.expense_rent') }}</option>
-                <option value="internet">{{ __('ui.expense_internet') }}</option>
-                <option value="outros">{{ __('ui.expense_other') }}</option>
-            </select>
+           <select 
+    name="category" 
+    class="w-full rounded bg-gray-800 text-white p-2 border border-gray-700"
+>
+    <option value="Acqua">{{ __('ui.expense_water') }}</option>
+    <option value="Luce">{{ __('ui.expense_electricity') }}</option>
+    <option value="Affitto">{{ __('ui.expense_rent') }}</option>
+    <option value="internet">{{ __('ui.expense_internet') }}</option>
+    <option value="Altri">{{ __('ui.expense_other') }}</option>
+</select>
 
             <input 
                 type="number" 
@@ -809,60 +942,190 @@
     </div>
   </div>
 
-  <!-- MODAL: EDIT PRODUCT -->
-  <div x-show="isEditModalOpen" style="display: none;" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.5);">
-    <div @click.outside="isEditModalOpen = false" x-show="isEditModalOpen" x-transition class="cosmic-card w-full max-w-lg backdrop-blur-lg">
+<!-- MODAL: EDIT PRODUCT -->
+<div 
+    x-show="isEditModalOpen" 
+    x-cloak
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+    x-transition:enter="transition ease-out duration-300"
+    x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100"
+    x-transition:leave="transition ease-in duration-200"
+    x-transition:leave-start="opacity-100"
+    x-transition:leave-end="opacity-0"
+>
+    <div 
+        x-data="{
+            photoPreview: null,
+            photoName: null,
+            handlePhotoChange(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                this.photoName = file.name;
+                const reader = new FileReader();
+                reader.onload = (e) => { this.photoPreview = e.target.result; };
+                reader.readAsDataURL(file);
+            },
+            // Resetar o preview quando o modal abrir/fechar
+            init() {
+                $watch('isEditModalOpen', value => {
+                    if (value) {
+                        this.photoPreview = editingProduct.photo_url || null;
+                        this.photoName = null;
+                    }
+                })
+            }
+        }"
+        @click.outside="isEditModalOpen = false" 
+        class="cosmic-card w-full max-w-lg shadow-2xl"
+    >
         <div class="flex items-center justify-between p-4 border-b border-[color:var(--border)]">
             <h2 class="text-lg font-semibold">{{ __('ui.edit_product') }}</h2>
-            <button @click="isEditModalOpen = false" class="p-1 rounded-full hover:bg-white/10">&times;</button>
+            <button @click="isEditModalOpen = false" class="p-1 rounded-full hover:bg-white/10 text-xl">&times;</button>
         </div>
-        <form :action="`/admin/products/${editingProduct.id}`" method="POST">
+
+        <form :action="`/admin/products/${editingProduct.id}`" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
+            
             <div class="p-6 space-y-4">
-                <div><label for="edit_product_name" class="block text-sm font-medium text-[color:var(--muted)]">{{ __('ui.product_name') }}</label><input type="text" id="edit_product_name" name="name" x-model="editingProduct.name" required class="input-base mt-1" :class="theme==='theme-dark' ? 'input-dark' : 'input-light'"></div>
-                <div><label for="edit_product_category" class="block text-sm font-medium text-[color:var(--muted)]">{{ __('ui.category') }}</label><select id="edit_product_category" name="category_id" x-model="editingProduct.category_id" required class="input-base mt-1" :class="theme==='theme-dark' ? 'input-dark' : 'input-light'"><option value="">{{ __('ui.select_category') }}</option>@foreach($categories as $category)<option value="{{ $category->id }}">{{ $category->name }}</option>@endforeach</select></div>
+                <div>
+                    <label for="edit_product_name" class="block text-sm font-medium text-[color:var(--muted)]">{{ __('ui.product_name') }}</label>
+                    <input type="text" id="edit_product_name" name="name" x-model="editingProduct.name" required class="input-base mt-1" :class="theme==='theme-dark' ? 'input-dark' : 'input-light'">
+                </div>
+
+                <div>
+                    <label for="edit_product_category" class="block text-sm font-medium text-[color:var(--muted)]">{{ __('ui.category') }}</label>
+                    <select id="edit_product_category" name="category_id" x-model="editingProduct.category_id" required class="input-base mt-1" :class="theme==='theme-dark' ? 'input-dark' : 'input-light'">
+                        <option value="">{{ __('ui.select_category') }}</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-[color:var(--muted)]">{{ __('ui.photo_optional') }}</label>
+                    <div class="mt-1 flex items-center justify-center p-4 border-2 border-dashed rounded-md relative" style="border-color: var(--border);">
+                        
+                        <div x-show="!photoPreview" class="space-y-1 text-center">
+                            <svg class="mx-auto h-12 w-12 text-[color:var(--muted)]" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                            <div class="flex text-sm text-[color:var(--muted)]">
+                                <label for="edit_file_upload" class="relative cursor-pointer rounded-md font-medium" style="color:var(--accent-b);">
+                                    <span>{{ __('ui.upload_file') }}</span>
+                                    <input x-ref="photoInput" @change="handlePhotoChange" id="edit_file_upload" name="photo" type="file" class="sr-only" accept="image/*">
+                                </label>
+                            </div>
+                        </div>
+
+                        <div x-show="photoPreview" class="text-center">
+                            <img :src="photoPreview" class="max-h-32 mx-auto rounded-lg shadow-md">
+                            <p x-text="photoName" class="text-xs text-[color:var(--muted)] mt-2"></p>
+                            <button @click="photoPreview = null; photoName = null; $refs.photoInput.value = null;" type="button" class="mt-2 text-xs text-red-400 hover:underline">{{ __('ui.remove') }}</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="flex justify-end gap-3 p-4 border-t border-[color:var(--border)]" :class="theme==='theme-dark' ? 'bg-[rgba(2,6,23,.5)]' : 'bg-slate-50/50'"><button type="button" @click="isEditModalOpen = false" class="btn">{{ __('ui.cancel') }}</button><button type="submit" class="btn btn-accent">{{ __('ui.update_product') }}</button></div>
+
+            <div class="flex justify-end gap-3 p-4 border-t border-[color:var(--border)]" :class="theme==='theme-dark' ? 'bg-black/20' : 'bg-slate-50'">
+                <button type="button" @click="isEditModalOpen = false" class="btn">{{ __('ui.cancel') }}</button>
+                <button type="submit" class="btn btn-accent">{{ __('ui.update_product') }}</button>
+            </div>
         </form>
     </div>
-  </div>
+</div>
 
-  <!-- MODAL: DELETE CONFIRMATION -->
-  <div x-show="isDeleteModalOpen" style="display: none;" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.5);">
-    <div @click.outside="isDeleteModalOpen = false" x-show="isDeleteModalOpen" x-transition class="cosmic-card w-full max-w-sm backdrop-blur-lg p-6 text-center">
-        <h3 class="text-lg font-semibold mb-2">{{ __('ui.confirm_delete_title') }}</h3>
-        <p class="text-sm text-[color:var(--muted)]">{{ __('ui.confirm_delete_text') }}</p>
-        <div class="mt-6 flex justify-center gap-4">
-            <button @click="isDeleteModalOpen = false" type="button" class="btn">{{ __('ui.cancel') }}</button>
-            <form :action="deletingProductUrl" method="POST">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="px-4 py-2 rounded-lg text-white text-sm" style="background:#dc262a">{{ __('ui.confirm_delete') }}</button>
-            </form>
-        </div>
-    </div>
-  </div>    
 
-  <!-- MODAL: EDIT PRODUCT -->
-  <div x-show="isEditModalOpen" style="display: none;" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.5);">
-    <div @click.outside="isEditModalOpen = false" x-show="isEditModalOpen" x-transition class="cosmic-card w-full max-w-lg backdrop-blur-lg">
-        <div class="flex items-center justify-between p-4 border-b border-[color:var(--border)]">
-            <h2 class="text-lg font-semibold">{{ __('ui.edit_product') }}</h2>
-            <button @click="isEditModalOpen = false" class="p-1 rounded-full hover:bg-white/10">&times;</button>
+ <div
+    x-show="isCriticalStockModalOpen"
+    x-transition
+    x-cloak
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+>
+    <div class="cosmic-card w-full max-w-3xl p-5 relative">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-white">
+                🚨 {{ __('ui.critical_stock_list') }}
+            </h3>
+            <button
+                @click="isCriticalStockModalOpen = false"
+                class="text-[color:var(--muted)] hover:text-white"
+            >✕</button>
         </div>
-        <form :action="`/admin/products/${editingProduct.id}`" method="POST">
-            @csrf
-            @method('PUT')
-            <div class="p-6 space-y-4">
-                <div><label for="edit_product_name" class="block text-sm font-medium text-[color:var(--muted)]">{{ __('ui.product_name') }}</label><input type="text" id="edit_product_name" name="name" x-model="editingProduct.name" required class="input-base mt-1" :class="theme==='theme-dark' ? 'input-dark' : 'input-light'"></div>
-                <div><label for="edit_product_category" class="block text-sm font-medium text-[color:var(--muted)]">{{ __('ui.category') }}</label><select id="edit_product_category" name="category_id" x-model="editingProduct.category_id" required class="input-base mt-1" :class="theme==='theme-dark' ? 'input-dark' : 'input-light'"><option value="">{{ __('ui.select_category') }}</option>@foreach($categories as $category)<option value="{{ $category->id }}">{{ $category->name }}</option>@endforeach</select></div>
-                <div><label for="edit_product_status" class="block text-sm font-medium text-[color:var(--muted)]">{{ __('ui.status') }}</label><select id="edit_product_status" name="status" x-model="editingProduct.status" required class="input-base mt-1" :class="theme==='theme-dark' ? 'input-dark' : 'input-light'"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-            </div>
-            <div class="flex justify-end gap-3 p-4 border-t border-[color:var(--border)]" :class="theme==='theme-dark' ? 'bg-[rgba(2,6,23,.5)]' : 'bg-slate-50/50'"><button type="button" @click="isEditModalOpen = false" class="btn">{{ __('ui.cancel') }}</button><button type="submit" class="btn btn-accent">{{ __('ui.update_product') }}</button></div>
-        </form>
+
+        <!-- Table -->
+        <div class="overflow-x-auto max-h-[60vh]">
+            <table class="min-w-full text-sm">
+                <thead class="border-b border-[color:var(--border)] text-[color:var(--muted)]">
+                    <tr>
+                        <th class="px-3 py-2 text-left">{{ __('ui.product') }}</th>
+                        <th class="px-3 py-2 text-center">{{ __('ui.qty') }}</th>
+                        <th class="px-3 py-2 text-center">{{ __('ui.stock_alert_level') }}</th>
+                        <th class="px-3 py-2 text-center">{{ __('ui.cost_price') }}</th>
+                        <th class="px-3 py-2 text-center">{{ __('ui.qty_to_reach_alert') }}</th>
+                        <th class="px-3 py-2 text-center">{{ __('ui.total_cost') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php
+                        $criticalProducts = $products->filter(fn($p) =>
+                            $p->stock &&
+                            $p->stock->quantity <= $p->stock->stock_alert_level
+                        );
+                        $grandTotal = 0;
+                    @endphp
+
+                    @forelse($criticalProducts as $product)
+                        @php
+                            $qtyToReachAlert = $product->stock->stock_alert_level - $product->stock->quantity;
+                            $totalCost = $qtyToReachAlert * $product->stock->cost_price;
+                            $grandTotal += $totalCost;
+                        @endphp
+                        <tr class="border-t border-[color:var(--border)]">
+                            <td class="px-3 py-2 font-medium">{{ $product->name }}</td>
+                            <td class="px-3 py-2 text-center text-red-400 font-semibold">{{ $product->stock->quantity }}</td>
+                            <td class="px-3 py-2 text-center">{{ $product->stock->stock_alert_level }}</td>
+                            <td class="px-3 py-2 text-center">€{{ number_format($product->stock->cost_price, 2, ',', '.') }}</td>
+                            <td class="px-3 py-2 text-center text-green-400 font-semibold">{{ $qtyToReachAlert }}</td>
+                            <td class="px-3 py-2 text-center font-medium">€{{ number_format($totalCost, 2, ',', '.') }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="py-6 text-center text-[color:var(--muted)]">
+                                {{ __('ui.no_critical_stock') }}
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+
+                @if($criticalProducts->count())
+                    <tfoot>
+                        <tr class="border-t border-[color:var(--border)] font-semibold text-white">
+                            <td colspan="5" class="px-3 py-2 text-right">{{ __('ui.grand_total_cost') ?? 'Total Geral' }}</td>
+                            <td class="px-3 py-2 text-center">€{{ number_format($grandTotal, 2, ',', '.') }}</td>
+                        </tr>
+                    </tfoot>
+                @endif
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-4 flex justify-end">
+            <button
+                class="btn text-sm"
+                @click="isCriticalStockModalOpen = false"
+            >
+                {{ __('ui.close') }}
+            </button>
+        </div>
+
     </div>
-  </div>
+</div>
+
 
   <!-- MODAL: DELETE CONFIRMATION -->
   <div x-show="isDeleteModalOpen" style="display: none;" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.5);">
@@ -1084,6 +1347,83 @@
   <footer class="py-6 text-center text-xs" style="color:var(--muted);">
     © {{ date('Y') }} Cosmic Bar · Admin
   </footer>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // 🔹 Resultado Financeiro
+    new Chart(document.getElementById('resultChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Hoje', 'Semana', 'Mês'],
+            datasets: [{
+                label: 'Resultado (€)',
+                data: [
+                    {{ $financeStats['diario']->resultado }},
+                    {{ $financeStats['semanal']->resultado }},
+                    {{ $financeStats['mensal']->resultado }}
+                ],
+                backgroundColor: ['#22c55e', '#a855f7', '#38bdf8']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // 🔹 Vendas x CMV x Despesas
+    new Chart(document.getElementById('financeChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Vendas', 'CMV', 'Despesas'],
+            datasets: [{
+                data: [
+                    {{ $financeStats['mensal']->vendas }},
+                    {{ $financeStats['mensal']->cmv }},
+                    {{ $financeStats['mensal']->despesas }}
+                ],
+                backgroundColor: ['#22c55e', '#f97316', '#ef4444']
+            }]
+        },
+        options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            position: 'bottom',
+            labels: {
+                color: '#cbd5f5',
+                font: { size: 11 }
+            }
+        }
+    }
+}
+
+    });
+
+    // 🔹 Despesas por Categoria
+    new Chart(document.getElementById('expenseCategoryChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {!! json_encode($expensesMonth->groupBy('category')->keys()) !!},
+            datasets: [{
+                data: {!! json_encode(
+                    $expensesMonth->groupBy('category')->map->sum('amount')->values()
+                ) !!},
+                backgroundColor: [
+                    '#ef4444', '#f97316', '#eab308',
+                    '#22c55e', '#06b6d4', '#6366f1'
+                ]
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+
+});
+</script>
 
 </body>
 </html>

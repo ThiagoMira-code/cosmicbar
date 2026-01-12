@@ -187,4 +187,27 @@ return [
 'clear' => 'Clear Order',
     'empty_table' => 'Order is empty',
     'stock' => 'In Stock',
+
+    'financial_result' => 'Financial Result',
+'sales_vs_costs'   => 'Sales vs Costs',
+
+'expenses_by_category' => 'Expenses by Category',
+
+'export_critical_stock' => 'Critical Stock',
+'critical_stock_list' => 'Critical Stock List',
+'no_critical_stock' => 'No products with critical stock',
+'close' => 'Close',
+
+   'qty_to_reach_alert' => 'Qty to Reach Alert',
+    'total_cost' => 'Total Cost',
+    'grand_total_cost' => 'Grand Total Cost',
+
+    'product_exists' => 'Error: The product already exists or the data is invalid.',
+    'product_created_success' => 'Product created successfully!',
+    'product_updated_success' => 'Product updated successfully!',
+    'search_product' => 'Search product or Category',
+
+    'clear_filters' => 'Clear Filters',
+ 
+    'expense_gas' => 'Gas'
 ];

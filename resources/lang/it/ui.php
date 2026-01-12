@@ -186,4 +186,28 @@ return [
     'empty_table' => 'Il comanda è vuoto',
 
     'stock' => 'Disponibile',
+
+
+    'financial_result' => 'Risultato Finanziario',
+'sales_vs_costs'   => 'Vendite vs Costi',
+
+'expenses_by_category' => 'Spese per Categoria',
+
+'export_critical_stock' => 'Stock Critico',
+'critical_stock_list' => 'Elenco Stock Critico',
+'no_critical_stock' => 'Nessun prodotto con stock critico',
+'close' => 'Chiudi',
+
+     'qty_to_reach_alert' => 'Quantità per Raggiungere Allerta',
+    'total_cost' => 'Costo Totale',
+    'grand_total_cost' => 'Costo Totale Generale',
+
+        'product_exists' => 'Errore: Il prodotto esiste già o i dati non sono validi.',
+    'product_created_success' => 'Prodotto creato con successo!',
+    'product_updated_success' => 'Prodotto aggiornato con successo!',
+
+    'search_product' => 'Cerca prodotto o categorìa',
+
+    'clear_filters' => 'Polire i filtri'
+
 ];

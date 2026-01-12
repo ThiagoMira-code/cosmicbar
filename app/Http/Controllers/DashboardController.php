@@ -5,46 +5,51 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\StockItem;
+use App\Models\Expense;
+use App\Services\FinanceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
-use App\Services\FinanceService;
-use App\Models\Expense;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // KPIs de Estoque
+        // 1. KPIs GLOBAIS (Não costumam mudar com o filtro da tabela)
         $activeProducts = Product::where('status', 'active')->count();
         $itemsInStock   = StockItem::sum('quantity');
-
-        // 🔥 FINANÇAS VINDO DO SERVICE
+        $stockValue     = StockItem::selectRaw('SUM(quantity * COALESCE(cost_price, 0)) as total')->value('total') ?? 0;
+        
         $financeStats = [
             'diario'  => FinanceService::daily(),
             'semanal' => FinanceService::weekly(),
             'mensal'  => FinanceService::monthly(),
         ];
 
-        // Valor total do estoque
-        $stockValue = StockItem::selectRaw('
-            SUM(quantity * COALESCE(cost_price, 0)) as total
-        ')->value('total') ?? 0;
-
-        // Produtos
+        // 2. QUERY DE PRODUTOS (Com Filtros Aplicados)
         $query = Product::with(['category', 'stock']);
 
+        // Filtro por Nome ou "SKU" (ID)
         if ($request->filled('search')) {
-            $query->where('name', 'like', "%{$request->search}%");
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('id', 'like', "%{$search}%");
+            });
         }
 
-            $expensesMonth = Expense::whereMonth('expense_date', Carbon::now()->month)
-        ->whereYear('expense_date', Carbon::now()->year)
-        ->orderBy('expense_date', 'desc')
-        ->get();
+        // 🔥 NOVO: Filtro por Categoria
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
 
+        // 3. OUTROS DADOS
+        $expensesMonth = Expense::whereMonth('expense_date', Carbon::now()->month)
+            ->whereYear('expense_date', Carbon::now()->year)
+            ->orderBy('expense_date', 'desc')
+            ->get();
 
         return view('admin.dashboard', [
+            // Mantendo os produtos filtrados
             'products'            => $query->latest()->get(),
             'categories'          => Category::orderBy('name')->get(),
             'activeProducts'      => $activeProducts,
@@ -53,8 +58,8 @@ class DashboardController extends Controller
             'financeStats'        => $financeStats,
             'lowStockAlerts'      => StockItem::whereColumn('quantity', '<=', 'stock_alert_level')->count(),
             'newProductsThisWeek' => Product::where('created_at', '>=', Carbon::now()->subWeek())->count(),
-            'avgMargin'           => 'N/A',
-            'expensesMonth' => $expensesMonth,
+            'avgMargin'           => 'N/A', // Você pode calcular isso depois
+            'expensesMonth'       => $expensesMonth,
         ]);
     }
 }

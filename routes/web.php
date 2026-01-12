@@ -13,7 +13,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 // Troca de idioma (EN/IT)
 Route::get('/locale/{lang}', function (string $lang) {
-    $lang = in_array($lang, ['en', 'it']) ? $lang : 'en';
+    $lang = in_array($lang, ['en', 'it']) ? $lang : 'it';
     session(['locale' => $lang]);
     App::setLocale($lang);
     return back();

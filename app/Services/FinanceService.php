@@ -24,39 +24,39 @@ $query->whereDate('created_at', '>=', $startDate->format('Y-m-d'));
     /**
      * Método base reutilizável
      */
-    private static function calculateFrom($startDate = null)
-    {
-        $raw = DB::table('sale_items')
-            ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
-            ->leftJoin('stock_items', 'stock_items.product_id', '=', 'sale_items.product_id');
+   private static function calculateFrom($startDate = null)
+{
+    $raw = DB::table('sale_items')
+        ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
+        ->leftJoin('stock_items', 'stock_items.product_id', '=', 'sale_items.product_id');
 
-        if ($startDate) {
-            $raw->whereDate('sales.created_at', '>=', $startDate->format('Y-m-d'));
-        }
-
-        $data = $raw->selectRaw('
-            SUM(CAST(sale_items.price AS DECIMAL(10,2)) * sale_items.quantity) as total_vendas,
-            SUM(
-                (CAST(sale_items.price AS DECIMAL(10,2)) - COALESCE(stock_items.cost_price, 0))
-                * sale_items.quantity
-            ) as lucro_liquido
-        ')->first();
-
-        $vendas   = $data->total_vendas ?? 0;
-        $lucro   = $data->lucro_liquido ?? 0;
-        $cmv     = $vendas - $lucro;
-        $despesas = self::calculateExpensesFrom($startDate);
-
-        return (object)[
-            'vendas'        => $vendas,
-            'lucro'         => $lucro,
-            'cmv'           => $cmv,
-            'despesas'      => $despesas,
-            'lucro_real'    => $lucro - $despesas, // 🔥 bônus
-                'resultado' => $lucro - $despesas,     // ✅ RESULTADO FINAL
-
-        ];
+    if ($startDate) {
+        $raw->whereDate('sales.created_at', '>=', $startDate->format('Y-m-d'));
     }
+
+    $data = $raw->selectRaw('
+        SUM(CAST(sale_items.price AS DECIMAL(10,2)) * sale_items.quantity) as total_vendas,
+        SUM(
+            (CAST(sale_items.price AS DECIMAL(10,2)) - COALESCE(stock_items.cost_price, 0))
+            * sale_items.quantity
+        ) as lucro_liquido
+    ')->first();
+
+    $vendas    = $data->total_vendas ?? 0;
+    $lucro     = $data->lucro_liquido ?? 0;
+    $cmv       = $vendas - $lucro;
+    $despesas  = self::calculateExpensesFrom($startDate);
+
+    return (object)[
+        'vendas'        => $vendas,
+        'lucro'         => $lucro,
+        'cmv'           => $cmv,              // continua exibindo
+        'despesas'      => $despesas,
+        'lucro_real'    => $vendas - $despesas, // agora lucro_real ignora CMV
+        'resultado'     => $vendas - $despesas, // resultado final sem CMV
+    ];
+}
+
 
     public static function daily()
     {

@@ -7,6 +7,9 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\ExpenseController;
+use App\Exports\CriticalStockExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 // Troca de idioma (EN/IT)
 Route::get('/locale/{lang}', function (string $lang) {
@@ -52,7 +55,15 @@ Route::middleware('locale')->group(function () {
             // Gerenciamento de Estoque e Preços
             Route::post('/stock/{product}', [StockController::class, 'update'])->name('stock.update');
             Route::post('/stock/{product}/price', [StockController::class, 'updatePrice'])->name('stock.price.update');
+
+                Route::post('/expenses', [ExpenseController::class, 'store'])
+        ->name('expenses.store');
+        
+       
+
         });
+
+    
 
     });
 

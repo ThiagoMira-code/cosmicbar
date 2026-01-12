@@ -133,7 +133,7 @@ return [
   'total' => 'Totale',
 
    'sales' => 'Vendite',
-  'table' => 'Tavolo',
+  'table' => 'Comanda',
   'order' => 'Ordine',
   'add' => 'Aggiungi',
   'total' => 'Totale',
@@ -155,4 +155,35 @@ return [
     'hide_details' => 'Nascondi Dettagli',
     'recent_transactions' => 'Transazioni Recenti',
     'detailed_report_placeholder' => 'Clicca sul pulsante sopra per vedere lo storico delle transazioni.',
+
+      'new_expense' => 'Nuova Spesa',
+    'amount' => 'Importo',
+    'save' => 'Salva',
+    'cancel' => 'Annulla',
+
+    'expense_description_placeholder' => 'Esempio: Bolletta della luce',
+
+    /* Categorie di spesa */
+    'expense_water' => 'Acqua',
+    'expense_electricity' => 'Elettricità',
+    'expense_rent' => 'Affitto',
+    'expense_internet' => 'Internet',
+    'expense_other' => 'Altro',
+
+        'expense_created_success' => 'Spesa registrata con successo!',
+
+            'export_critical_stock' => 'Esporta Scorte Critiche',
+
+              'stock_investment_summary' => 'Riepilogo Investimento Magazzino',
+    'total_invested_stock'     => 'Totale Investito in Magazzino',
+
+    'expenses_of_the_month' => 'Spese del Mese',
+
+    'low_stock_alert_title' => 'Avviso Scorte Critiche',
+'low_stock_alert_message' => ':product è a scorte critiche (:qty)',
+
+'clear' => 'Svuota Comanda',
+    'empty_table' => 'Il comanda è vuoto',
+
+    'stock' => 'Disponibile',
 ];

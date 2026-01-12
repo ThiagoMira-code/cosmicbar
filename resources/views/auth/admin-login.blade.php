@@ -26,10 +26,12 @@
           <p class="text-xs text-slate-300">{{ __('auth.admin_area') }}</p>
         </div>
         <div class="flex gap-2">
-          <a href="{{ route('locale.set','en') }}"
-             class="px-2 py-1 text-xs rounded {{ app()->getLocale()==='en'?'bg-white text-slate-900':'bg-slate-800' }}">EN</a>
           <a href="{{ route('locale.set','it') }}"
              class="px-2 py-1 text-xs rounded {{ app()->getLocale()==='it'?'bg-white text-slate-900':'bg-slate-800' }}">IT</a>
+              <a href="{{ route('locale.set','en') }}"
+             class="px-2 py-1 text-xs rounded {{ app()->getLocale()==='en'?'bg-white text-slate-900':'bg-slate-800' }}">EN</a>
+              <a href="{{ route('locale.set','es') }}"
+             class="px-2 py-1 text-xs rounded {{ app()->getLocale()==='es'?'bg-white text-slate-900':'bg-slate-800' }}">ES</a>
         </div>
       </div>
 

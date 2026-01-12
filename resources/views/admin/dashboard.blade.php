@@ -15,21 +15,36 @@
 
 <body
   x-data="{
+    /* Tabs */
     tab: 'products',
+
+    /* Produtos */
     isNewModalOpen: false,
     isEditModalOpen: false,
     isDeleteModalOpen: false,
-     isStockModalOpen: false,    
+    isStockModalOpen: false,
+    isPriceModalOpen: false,
+
     editingProduct: {},
-    stockingProduct: {}, 
-      isPriceModalOpen: false,       // <— NOVO
-  priceProduct: {},              // <— NOVO
+    stockingProduct: {},
+    priceProduct: {},
     deletingProductUrl: '',
+
+    /* 💰 FINANCE */
+    openExpenseModal: false,
+    showDetailedList: false,
+
+    /* Tema */
     theme: localStorage.getItem('cosmic-theme') || 'theme-dark',
+
     init(){
         document.documentElement.classList.add(this.theme);
-        if (window.shouldOpenModal) { this.isNewModalOpen = true; }
+
+        if (window.shouldOpenModal) {
+            this.isNewModalOpen = true;
+        }
     },
+
     toggleTheme(){
       document.documentElement.classList.remove(this.theme);
       this.theme = (this.theme === 'theme-dark') ? 'theme-light' : 'theme-dark';
@@ -40,6 +55,7 @@
   :class="theme === 'theme-dark' ? 'bg-stars' : 'bg-stars-light'"
   class="h-full text-[color:var(--text)]"
 >
+
 @if ($errors->any())
 <script>
     window.shouldOpenModal = true;
@@ -63,15 +79,6 @@
 
     <div class="flex items-center gap-3">
         <div class="flex gap-2">
-        <a href="{{ route('locale.set','en') }}"
-            class="px-2 py-1 text-xs rounded transition flex items-center gap-1
-                    {{ app()->getLocale()==='en'
-                        ? 'bg-white text-slate-900'
-                        : 'bg-[rgba(2,6,23,.5)] text-[color:var(--text)] border border-[color:var(--border)] hover:bg-[rgba(2,6,23,.65)]' }}">
-            <svg class="h-3.5 w-5" viewBox="0 0 60 30" aria-hidden="true"><path fill="#012169" d="M0 0h60v30H0z"/><path fill="#FFF" d="M0 0l60 30m0-30L0 30"/><path stroke="#C8102E" stroke-width="5" d="M0 0l60 30m0-30L0 30"/><path fill="#FFF" d="M30 0v30M0 15h60"/><path stroke="#C8102E" stroke-width="7" d="M30 0v30M0 15h60"/></svg>
-            EN
-        </a>
-
         <a href="{{ route('locale.set','it') }}"
             class="px-2 py-1 text-xs rounded transition flex items-center gap-1
                     {{ app()->getLocale()==='it'
@@ -79,6 +86,25 @@
                         : 'bg-[rgba(2,6,23,.5)] text-[color:var(--text)] border border-[color:var(--border)] hover:bg-[rgba(2,6,23,.65)]' }}">
             <svg class="h-3.5 w-5" viewBox="0 0 3 2" aria-hidden="true"><path fill="#008C45" d="M0 0h1v2H0z"/><path fill="#F4F5F0" d="M1 0h1v2H1z"/><path fill="#CD212A" d="M2 0h1v2H2z"/></svg>
             IT
+        </a>
+         <a href="{{ route('locale.set','en') }}"
+            class="px-2 py-1 text-xs rounded transition flex items-center gap-1
+                    {{ app()->getLocale()==='en'
+                        ? 'bg-white text-slate-900'
+                        : 'bg-[rgba(2,6,23,.5)] text-[color:var(--text)] border border-[color:var(--border)] hover:bg-[rgba(2,6,23,.65)]' }}">
+            <svg class="h-3.5 w-5" viewBox="0 0 60 30" aria-hidden="true"><path fill="#012169" d="M0 0h60v30H0z"/><path fill="#FFF" d="M0 0l60 30m0-30L0 30"/><path stroke="#C8102E" stroke-width="5" d="M0 0l60 30m0-30L0 30"/><path fill="#FFF" d="M30 0v30M0 15h60"/><path stroke="#C8102E" stroke-width="7" d="M30 0v30M0 15h60"/></svg>
+            EN
+        </a>
+        <a href="{{ route('locale.set','es') }}"
+            class="px-2 py-1 text-xs rounded transition flex items-center gap-1
+                    {{ app()->getLocale()==='es'
+                        ? 'bg-white text-slate-900'
+                        : 'bg-[rgba(2,6,23,.5)] text-[color:var(--text)] border border-[color:var(--border)] hover:bg-[rgba(2,6,23,.65)]' }}">
+<svg class="h-3.5 w-5" viewBox="0 0 750 500" aria-hidden="true">
+    <rect width="750" height="500" fill="#c8102e"/>
+    <rect width="750" height="250" y="125" fill="#fabd00"/>
+    <circle cx="200" cy="250" r="40" fill="#c8102e" opacity="0.8"/>
+</svg>            ES
         </a>
         </div>
 
@@ -226,10 +252,22 @@
 <section x-show="tab==='stock'" x-transition x-cloak>
   <!-- KPIs -->
   <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-    <div class="cosmic-card p-4"><div class="text-sm text-[color:var(--muted)]">{{ __('ui.items_stock') }}</div><div class="mt-2 text-2xl font-semibold">{{ number_format($itemsInStock, 0, ',', '.') }}</div></div>
-    <div class="cosmic-card p-4"><div class="text-sm text-[color:var(--muted)]">{{ __('ui.reorder_need') }}</div><div class="mt-2 text-2xl font-semibold">{{ $lowStockAlerts }}</div></div>
-    <div class="cosmic-card p-4"><div class="text-sm text-[color:var(--muted)]">{{ __('ui.stock_value') }}</div><div class="mt-2 text-2xl font-semibold">€{{ number_format($stockValue, 2, ',', '.') }}</div></div>
-    <div class="cosmic-card p-4"><div class="text-sm text-[color:var(--muted)]">{{ __('ui.days_cover') }}</div><div class="mt-2 text-2xl font-semibold">N/A</div></div>
+    <div class="cosmic-card p-4">
+      <div class="text-sm text-[color:var(--muted)]">{{ __('ui.items_stock') }}</div>
+      <div class="mt-2 text-2xl font-semibold">{{ number_format($itemsInStock, 0, ',', '.') }}</div>
+    </div>
+    <div class="cosmic-card p-4">
+      <div class="text-sm text-[color:var(--muted)]">{{ __('ui.reorder_need') }}</div>
+      <div class="mt-2 text-2xl font-semibold">{{ $lowStockAlerts }}</div>
+    </div>
+    <div class="cosmic-card p-4">
+      <div class="text-sm text-[color:var(--muted)]">{{ __('ui.stock_value') }}</div>
+      <div class="mt-2 text-2xl font-semibold">€{{ number_format($stockValue, 2, ',', '.') }}</div>
+    </div>
+    <div class="cosmic-card p-4">
+      <div class="text-sm text-[color:var(--muted)]">{{ __('ui.days_cover') }}</div>
+      <div class="mt-2 text-2xl font-semibold">N/A</div>
+    </div>
   </div>
 
   @if (session('low_stock'))
@@ -237,6 +275,16 @@
       {{ session('low_stock') }}
     </div>
   @endif
+
+  <!-- Botão Exportar Estoque Crítico -->
+  <div class="mt-4 flex justify-end">
+   <form action="#" method="GET">
+    <button type="submit" class="btn btn-primary text-sm">
+        {{ __('ui.export_critical_stock') }}
+    </button>
+</form>
+
+  </div>
 
   <!-- Tabela -->
   <div class="mt-6 cosmic-card overflow-hidden" x-data>
@@ -261,27 +309,26 @@
             <td class="px-4 py-3 whitespace-nowrap">€{{ number_format($product->stock->cost_price ?? 0, 2, ',') }}</td>
             <td class="px-4 py-3 whitespace-nowrap">{{ $product->stock->stock_alert_level ?? '-' }}</td>
             <td class="px-4 py-3 text-right">
-  <div class="flex items-center gap-2 justify-end">
-    <button
-      class="btn text-sm"
-      @click="
-        stockingProduct = @js($product->load(['stock.discounts']));
-        discounts = (stockingProduct.stock?.discounts || []).map(d => ({min_quantity: d.min_quantity, discounted_price: d.discounted_price}));
-        isStockModalOpen = true;
-      "
-    >{{ __('ui.manage_stock') }}</button>
+              <div class="flex items-center gap-2 justify-end">
+                <button
+                  class="btn text-sm"
+                  @click="
+                    stockingProduct = @js($product->load(['stock.discounts']));
+                    discounts = (stockingProduct.stock?.discounts || []).map(d => ({min_quantity: d.min_quantity, discounted_price: d.discounted_price}));
+                    isStockModalOpen = true;
+                  "
+                >{{ __('ui.manage_stock') }}</button>
 
-    <!-- NOVO: Update Price -->
-    <button
-      class="btn text-sm"
-      @click="
-        priceProduct = @js($product->load('stock'));
-        priceValue = priceProduct?.stock?.price ?? '';
-        isPriceModalOpen = true;
-      "
-    >{{ __('ui.update_price') }}</button>
-  </div>
-</td>
+                <button
+                  class="btn text-sm"
+                  @click="
+                    priceProduct = @js($product->load('stock'));
+                    priceValue = priceProduct?.stock?.price ?? '';
+                    isPriceModalOpen = true;
+                  "
+                >{{ __('ui.update_price') }}</button>
+              </div>
+            </td>
           </tr>
           @empty
           <tr><td colspan="6" class="text-center py-6 text-[color:var(--muted)]">{{ __('ui.no_products_found') }}</td></tr>
@@ -291,6 +338,7 @@
     </div>
   </div>
 </section>
+
 @endif
 
 <section
@@ -305,15 +353,23 @@
       6: [], 7: [], 8: [], 9: [], 10: []
     },
 
-    save(){
+    save() {
       localStorage.setItem('mesas_pdv', JSON.stringify(this.mesas));
     },
 
-    addToCart(product){
+    // Nova função para limpar a mesa sem salvar venda
+    clearTable() {
+      if(confirm('Deseja realmente limpar todos os itens desta mesa?')) {
+        this.mesas[this.mesaAtiva] = [];
+        this.save();
+      }
+    },
+
+    addToCart(product) {
       const cart = this.mesas[this.mesaAtiva];
       const item = cart.find(i => i.id === product.id);
 
-      if(item){
+      if (item) {
         item.qty++;
       } else {
         cart.push({ ...product, qty: 1 });
@@ -322,25 +378,23 @@
       this.save();
     },
 
-    removeItem(id){
-      this.mesas[this.mesaAtiva] =
-        this.mesas[this.mesaAtiva].filter(i => i.id !== id);
-
+    removeItem(id) {
+      this.mesas[this.mesaAtiva] = this.mesas[this.mesaAtiva].filter(i => i.id !== id);
       this.save();
     },
 
-    total(){
+    total() {
       return this.mesas[this.mesaAtiva]
-        .reduce((t,i) => t + (i.price * i.qty), 0);
+        .reduce((t, i) => t + (i.price * i.qty), 0);
     },
 
-    async checkout(){
-      if(!this.mesas[this.mesaAtiva].length){
-        alert('Mesa vazia');
+    async checkout() {
+      if (!this.mesas[this.mesaAtiva].length) {
+        alert('A mesa está vazia!');
         return;
       }
 
-      if(!confirm('Pagamento já foi realizado?')){
+      if (!confirm('Confirmar finalização da venda?')) {
         return;
       }
 
@@ -349,8 +403,8 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document
-              .querySelector('meta[name=csrf-token]').content
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
           },
           body: JSON.stringify({
             mesa: this.mesaAtiva,
@@ -359,30 +413,34 @@
           })
         });
 
-        if(!response.ok){
-          throw new Error('Erro ao salvar venda');
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Erro desconhecido ao salvar venda');
         }
 
-        // limpa mesa SOMENTE após salvar no banco
         this.mesas[this.mesaAtiva] = [];
         this.save();
 
         alert('Venda finalizada com sucesso!');
-      } catch(e){
-        alert('Erro ao finalizar venda');
-        console.error(e);
+
+
+        location.reload();
+
+      } catch (error) {
+        console.error('Erro detalhado:', error);
+        alert('Falha ao processar venda: ' + error.message);
       }
     }
   }"
   class="space-y-4"
 >
 
-  <!-- TABLES -->
   <div class="flex gap-2 flex-wrap">
     <template x-for="n in 10" :key="n">
       <button
-        class="cosmic-card px-4 py-2 text-sm"
-        :class="mesaAtiva === n ? 'ring-2 ring-accent' : ''"
+        class="cosmic-card px-4 py-2 text-sm transition-all"
+        :class="mesaAtiva === n ? 'border-2 border-accent bg-accent/10' : 'opacity-70'"
         @click="mesaAtiva = n"
       >
         {{ __('ui.table') }} <span x-text="n"></span>
@@ -390,89 +448,98 @@
     </template>
   </div>
 
-  <!-- MAIN GRID -->
   <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-    <!-- PRODUCTS -->
     <div class="lg:col-span-3">
       <div class="grid sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
         @foreach($products as $product)
-        <div class="cosmic-card p-3 flex flex-col">
-          <img
-            src="{{ $product->photo_url ?? '/img/placeholder.png' }}"
-            class="h-28 w-full object-cover rounded-lg mb-3"
-          >
+          {{-- FILTRO DE ESTOQUE: Só renderiza se a quantidade for maior que zero --}}
+          @if(($product->stock->quantity ?? 0) > 0)
+            <div class="cosmic-card p-3 flex flex-col">
+              <img
+                src="{{ $product->photo_url ?? '/img/placeholder.png' }}"
+                class="h-28 w-full object-cover rounded-lg mb-3"
+              >
 
-          <div class="flex-1">
-            <h3 class="font-semibold text-sm">{{ $product->name }}</h3>
-            <p class="text-xs text-[color:var(--muted)]">
-              {{ $product->category->name }}
-            </p>
-          </div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-sm">{{ $product->name }}</h3>
+                <p class="text-xs text-[color:var(--muted)]">
+                  {{ $product->category->name }}
+                 <span class="block text-accent font-bold">
+    {{ __('ui.stock') }}: {{ $product->stock->quantity }}
+</span>
+                </p>
+              </div>
 
-          <div class="mt-3 flex items-center justify-between">
-            <span class="font-semibold text-lg">
-              €{{ number_format($product->stock->price ?? 0, 2, ',', '.') }}
-            </span>
+              <div class="mt-3 flex items-center justify-between">
+                <span class="font-semibold text-lg">
+                  €{{ number_format($product->stock->price ?? 0, 2, ',', '.') }}
+                </span>
 
-            <button
-              class="btn btn-accent text-sm"
-              @click="addToCart({
-                id: {{ $product->id }},
-                name: '{{ $product->name }}',
-                price: {{ $product->stock->price ?? 0 }}
-              })"
-            >
-              {{ __('ui.add') }}
-            </button>
-          </div>
-        </div>
+                <button
+                  class="btn btn-accent text-sm px-3 py-1"
+                  @click="addToCart({
+                    id: {{ $product->id }},
+                    name: '{{ $product->name }}',
+                    price: {{ $product->stock->price ?? 0 }}
+                  })"
+                >
+                  {{ __('ui.add') }}
+                </button>
+              </div>
+            </div>
+          @endif
         @endforeach
       </div>
     </div>
 
-    <!-- ORDER -->
-    <div class="cosmic-card p-4 flex flex-col">
-      <h2 class="font-semibold mb-4">
-        {{ __('ui.order') }} – {{ __('ui.table') }}
-        <span x-text="mesaAtiva"></span>
-      </h2>
+    <div class="cosmic-card p-4 flex flex-col min-h-[400px]">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="font-semibold">
+          {{ __('ui.order') }} – {{ __('ui.table') }} <span x-text="mesaAtiva"></span>
+        </h2>
+        <button @click="clearTable()" class="text-xs text-red-400 hover:underline">
+            {{ __('ui.clear') ?? 'Limpar' }}
+        </button>
+      </div>
 
       <div class="flex-1 space-y-3 overflow-auto">
         <template x-if="!mesas[mesaAtiva].length">
-          <p class="text-sm text-[color:var(--muted)]">
+          <p class="text-sm text-[color:var(--muted)] text-center py-10">
             {{ __('ui.empty_table') }}
           </p>
         </template>
 
         <template x-for="item in mesas[mesaAtiva]" :key="item.id">
-          <div class="flex justify-between items-center text-sm">
+          <div class="flex justify-between items-center text-sm border-b border-white/5 pb-2">
             <div>
-              <p x-text="item.name"></p>
+              <p x-text="item.name" class="font-medium"></p>
               <span class="text-xs text-[color:var(--muted)]">
                 €<span x-text="item.price.toFixed(2)"></span> ×
-                <span x-text="item.qty"></span>
+                <span x-text="item.qty" class="text-white font-bold"></span>
               </span>
             </div>
 
             <button
-              class="text-red-500 text-xs"
+              class="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white p-1 rounded transition-colors"
               @click="removeItem(item.id)"
             >
-              ✕
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
         </template>
       </div>
 
       <div class="border-t border-[color:var(--border)] mt-4 pt-4">
-        <div class="flex justify-between font-semibold">
+        <div class="flex justify-between font-semibold text-xl mb-4">
           <span>{{ __('ui.total') }}</span>
-          <span>€<span x-text="total().toFixed(2)"></span></span>
+          <span class="text-accent">€<span x-text="total().toFixed(2)"></span></span>
         </div>
 
         <button
-          class="btn btn-accent w-full mt-4"
+          class="btn btn-accent w-full py-3 font-bold shadow-lg shadow-accent/20"
           @click="checkout()"
         >
           {{ __('ui.checkout') }}
@@ -484,62 +551,240 @@
 </section>
 
 @if(auth()->user()->is_admin)
-<section x-show="tab === 'finance'" x-transition x-cloak class="space-y-6" x-data="{ showDetailedList: false }">
+<section 
+    x-show="tab === 'finance'" 
+    x-transition 
+    x-cloak 
+    class="space-y-6"
+>
+    <!-- Header -->
     <div class="flex items-center justify-between">
-        <h2 class="text-xl font-bold text-white">{{ __('ui.finance_details') }}</h2>
-        
-        <button @click="showDetailedList = !showDetailedList" 
-                class="text-xs bg-accent/20 hover:bg-accent/40 text-accent px-3 py-1 rounded-lg border border-accent/30 transition">
+        <h2 class="text-xl font-bold text-white">
+            {{ __('ui.finance_details') }}
+        </h2>
+
+       <div class="flex gap-2">
+        <!-- note este botão -->
+        <button 
+            @click="openExpenseModal = true"
+            class="text-xs bg-green-600/20 hover:bg-green-600/40 text-green-400 px-3 py-1 rounded-lg border border-green-500/30 transition"
+        >
+            ➕ New Expense
+        </button>
+
+        <button 
+            @click="showDetailedList = !showDetailedList"
+            class="text-xs bg-accent/20 hover:bg-accent/40 text-accent px-3 py-1 rounded-lg border border-accent/30 transition"
+        >
             <span x-text="showDetailedList ? '{{ __('ui.hide_details') }}' : '{{ __('ui.view_details') }}'"></span>
         </button>
     </div>
+    </div>
 
+    <!-- Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="cosmic-card p-6 border-l-4 border-blue-500">
-            <h3 class="text-sm font-semibold uppercase tracking-wider text-[color:var(--muted)]">{{ __('ui.today') }}</h3>
-            <div class="mt-4">
-                <p class="text-2xl font-bold">€{{ number_format($financeStats['diario']->lucro_liquido ?? 0, 2, ',', '.') }}</p>
-                <p class="text-xs text-green-400 mt-1">{{ __('ui.sales') }}: €{{ number_format($financeStats['diario']->total_vendas ?? 0, 2, ',', '.') }}</p>
-            </div>
-        </div>
 
-        <div class="cosmic-card p-6 border-l-4 border-purple-500">
-            <h3 class="text-sm font-semibold uppercase tracking-wider text-[color:var(--muted)]">{{ __('ui.this_week') }}</h3>
-            <div class="mt-4">
-                <p class="text-2xl font-bold">€{{ number_format($financeStats['semanal']->lucro_liquido ?? 0, 2, ',', '.') }}</p>
-                <p class="text-xs text-green-400 mt-1">{{ __('ui.sales') }}: €{{ number_format($financeStats['semanal']->total_vendas ?? 0, 2, ',', '.') }}</p>
-            </div>
-        </div>
+        <!-- Hoje -->
+       <!-- Hoje -->
+<div class="cosmic-card p-6 border-l-4 border-green-500">
+    <h3 class="text-sm font-semibold uppercase tracking-wider text-[color:var(--muted)]">
+        {{ __('ui.today') }}
+    </h3>
 
-        <div class="cosmic-card p-6 border-l-4 border-accent">
-            <h3 class="text-sm font-semibold uppercase tracking-wider text-[color:var(--muted)]">{{ __('ui.this_month') }}</h3>
-            <div class="mt-4">
-                <p class="text-2xl font-bold">€{{ number_format($financeStats['mensal']->lucro_liquido ?? 0, 2, ',', '.') }}</p>
-                <p class="text-xs text-green-400 mt-1">{{ __('ui.sales') }}: €{{ number_format($financeStats['mensal']->total_vendas ?? 0, 2, ',', '.') }}</p>
-            </div>
-        </div>
-    </div>
-
-    <div x-show="showDetailedList" x-transition class="cosmic-card p-4 bg-white/5 border border-white/10">
-        <h3 class="text-white font-semibold mb-3">{{ __('ui.recent_transactions') }}</h3>
-        <p class="text-[color:var(--muted)] text-sm italic">
-            {{ __('ui.detailed_report_placeholder') }}
+    <div class="mt-4 space-y-1 text-sm">
+        <p class="text-2xl font-bold
+            {{ $financeStats['diario']->resultado < 0 ? 'text-red-500' : 'text-green-400' }}">
+            €{{ number_format($financeStats['diario']->resultado,2,',','.') }}
         </p>
-        </div>
 
-    <div class="cosmic-card p-4">
-        <h2 class="font-semibold mb-4 text-lg">{{ __('ui.stock_investment_summary') }}</h2>
-        <div class="text-sm text-[color:var(--muted)]">
-            <p>{{ __('ui.total_invested_stock') }}: 
-                <span class="text-white font-mono">
-                    €{{ number_format($stockValue ?? 0, 2, ',', '.') }}
-                </span>
-            </p>
-        </div>
+        <p>💰 {{ __('ui.sales') }}: €{{ number_format($financeStats['diario']->vendas,2,',','.') }}</p>
+        <p class="text-orange-400">📦 CMV: €{{ number_format($financeStats['diario']->cmv,2,',','.') }}</p>
+        <p class="text-red-400">💡 {{ __('ui.expenses') }}: €{{ number_format($financeStats['diario']->despesas,2,',','.') }}</p>
     </div>
-</section>
+</div>
+
+
+        <!-- Semana -->
+       <!-- Semana -->
+<div class="cosmic-card p-6 border-l-4 border-purple-500">
+    <h3 class="text-sm font-semibold uppercase tracking-wider text-[color:var(--muted)]">
+        {{ __('ui.this_week') }}
+    </h3>
+
+    <div class="mt-4 space-y-1 text-sm">
+        <p class="text-2xl font-bold
+            {{ $financeStats['semanal']->resultado < 0 ? 'text-red-500' : 'text-green-400' }}">
+            €{{ number_format($financeStats['semanal']->resultado,2,',','.') }}
+        </p>
+
+        <p>💰 {{ __('ui.sales') }}: €{{ number_format($financeStats['semanal']->vendas,2,',','.') }}</p>
+        <p class="text-orange-400">📦 CMV: €{{ number_format($financeStats['semanal']->cmv,2,',','.') }}</p>
+        <p class="text-red-400">💡 {{ __('ui.expenses') }}: €{{ number_format($financeStats['semanal']->despesas,2,',','.') }}</p>
+    </div>
+</div>
+
+
+      <!-- Mês -->
+<div class="cosmic-card p-6 border-l-4 border-accent">
+    <h3 class="text-sm font-semibold uppercase tracking-wider text-[color:var(--muted)]">
+        {{ __('ui.this_month') }}
+    </h3>
+
+    <div class="mt-4 space-y-1 text-sm">
+
+        <!-- RESULTADO FINAL -->
+        <p class="text-2xl font-bold
+            {{ $financeStats['mensal']->resultado < 0 ? 'text-red-500' : 'text-green-400' }}">
+            €{{ number_format($financeStats['mensal']->resultado, 2, ',', '.') }}
+        </p>
+
+        <p class="text-xs text-[color:var(--muted)] mb-2">
+            {{ __('ui.month_result') }}
+        </p>
+
+        <p>💰 {{ __('ui.sales') }}: €{{ number_format($financeStats['mensal']->vendas,2,',','.') }}</p>
+
+        <p class="text-orange-400">
+            📦 CMV: €{{ number_format($financeStats['mensal']->cmv,2,',','.') }}
+        </p>
+
+        <p class="text-red-400">
+            💡 {{ __('ui.expenses') }}: €{{ number_format($financeStats['mensal']->despesas,2,',','.') }}
+        </p>
+    </div>
+</div>
+
+
+    </div>
+
+    <!-- Detalhamento de Despesas -->
+<!-- Detalhamento de Despesas -->
+<div 
+    x-show="showDetailedList" 
+    x-transition 
+    class="cosmic-card p-4 bg-white/5 border border-white/10"
+>
+    <h3 class="text-white font-semibold mb-4">
+        💡 {{ __('ui.expenses_of_the_month') }}
+    </h3>
+
+    @if($expensesMonth->count())
+        <table class="w-full text-sm">
+            <thead class="text-[color:var(--muted)] border-b border-white/10">
+                <tr>
+                    <th class="text-left py-2">{{ __('ui.date') }}</th>
+                    <th class="text-left">{{ __('ui.description') }}</th>
+                    <th>{{ __('ui.category') }}</th>
+                    <th>{{ __('ui.type') }}</th>
+                    <th class="text-right">{{ __('ui.amount') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($expensesMonth as $expense)
+                    <tr class="border-b border-white/5">
+                        <td class="py-1">{{ $expense->expense_date->format('d/m') }}</td>
+                        <td>{{ $expense->description }}</td>
+                        <td>{{ ucfirst($expense->category) }}</td>
+                        <td class="capitalize text-xs">{{ $expense->type }}</td>
+                        <td class="text-right text-red-400">
+                            €{{ number_format($expense->amount,2,',','.') }}
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @else
+        <p class="text-sm text-[color:var(--muted)] italic">
+            {{ __('ui.no_expenses_recorded') }}
+        </p>
+    @endif
+</div>
+
+<!-- Estoque -->
+<div class="cosmic-card p-4 mt-4">
+    <h2 class="font-semibold mb-4 text-lg">
+        {{ __('ui.stock_investment_summary') }}
+    </h2>
+
+    <p class="text-sm text-[color:var(--muted)]">
+        {{ __('ui.total_invested_stock') }}:
+        <span class="text-white font-mono">
+            €{{ number_format($stockValue ?? 0, 2, ',', '.') }}
+        </span>
+    </p>
+</div>
+
 @endif
+
   </main>
+<div 
+    x-show="openExpenseModal" 
+    x-transition 
+    class="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+>
+    <div class="bg-[#0f172a] rounded-xl p-6 w-full max-w-md">
+        <h3 class="text-white font-semibold mb-4">
+            ➕ {{ __('ui.new_expense') }}
+        </h3>
+
+        <form method="POST" action="{{ route('admin.expenses.store') }}" class="space-y-3">
+            @csrf
+
+            <input 
+                type="date" 
+                name="expense_date" 
+                required 
+                class="w-full rounded bg-white/10 text-white p-2"
+            >
+
+            <input 
+                type="text" 
+                name="description" 
+                placeholder="{{ __('ui.expense_description_placeholder') }}"
+                required 
+                class="w-full rounded bg-white/10 text-white p-2"
+            >
+
+            <select 
+                name="category" 
+                class="w-full rounded bg-white/10 text-white p-2"
+            >
+                <option value="agua">{{ __('ui.expense_water') }}</option>
+                <option value="luz">{{ __('ui.expense_electricity') }}</option>
+                <option value="aluguel">{{ __('ui.expense_rent') }}</option>
+                <option value="internet">{{ __('ui.expense_internet') }}</option>
+                <option value="outros">{{ __('ui.expense_other') }}</option>
+            </select>
+
+            <input 
+                type="number" 
+                step="0.01" 
+                name="amount"
+                placeholder="{{ __('ui.amount') }} €"
+                required 
+                class="w-full rounded bg-white/10 text-white p-2"
+            >
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button 
+                    type="button" 
+                    @click="openExpenseModal = false"
+                    class="text-sm px-3 py-1 text-gray-300"
+                >
+                    {{ __('ui.cancel') }}
+                </button>
+
+                <button 
+                    type="submit"
+                    class="text-sm bg-green-600 px-4 py-1 rounded text-white"
+                >
+                    {{ __('ui.save') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
   <div x-show="isNewModalOpen" style="display: none;" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.5);">
     <div x-data="{ photoPreview: null, photoName: null, handlePhotoChange(event) { const file = event.target.files[0]; if (!file) { return; }; this.photoName = file.name; const reader = new FileReader(); reader.onload = (e) => { this.photoPreview = e.target.result; }; reader.readAsDataURL(file); } }" @click.outside="isNewModalOpen = false" x-show="isNewModalOpen" x-transition class="cosmic-card w-full max-w-lg backdrop-blur-lg">

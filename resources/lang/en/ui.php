@@ -135,7 +135,7 @@ return [
   'total' => 'Total',
 
     'sales' => 'Sales',
-  'table' => 'Table',
+  'table' => 'Order',
   'order' => 'Order',
   'add' => 'Add',
   'total' => 'Total',
@@ -157,4 +157,34 @@ return [
     'hide_details' => 'Hide Details',
     'recent_transactions' => 'Recent Transactions',
     'detailed_report_placeholder' => 'Click the button above to see the transaction history.',
+
+      'new_expense' => 'New Expense',
+    'amount' => 'Amount',
+    'save' => 'Save',
+    'cancel' => 'Cancel',
+
+    'expense_description_placeholder' => 'Example: Electricity bill',
+
+    /* Expense categories */
+    'expense_water' => 'Water',
+    'expense_electricity' => 'Electricity',
+    'expense_rent' => 'Rent',
+    'expense_internet' => 'Internet',
+    'expense_other' => 'Other',
+
+        'expense_created_success' => 'Expense successfully recorded!',
+
+            'export_critical_stock' => 'Export Critical Stock',
+
+                'stock_investment_summary' => 'Stock Investment Summary',
+    'total_invested_stock'     => 'Total Invested in Stock',
+
+    'expenses_of_the_month' => 'Expenses of the Month',
+
+    'low_stock_alert_title' => 'Low Stock Alert',
+'low_stock_alert_message' => ':product is at critical stock (:qty)',
+
+'clear' => 'Clear Order',
+    'empty_table' => 'Order is empty',
+    'stock' => 'In Stock',
 ];

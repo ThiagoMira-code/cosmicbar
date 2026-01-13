@@ -24,6 +24,7 @@
     isDeleteModalOpen: false,
     isStockModalOpen: false,
     isPriceModalOpen: false,
+    isStockAddModalOpen: false,
 
     editingProduct: {},
     stockingProduct: {},
@@ -393,6 +394,17 @@
                     isPriceModalOpen = true;
                   "
                 >{{ __('ui.update_price') }}</button>
+                <button
+    class="btn text-sm"
+    @click="
+        stockProduct = @js($product->load('stock'));
+        stockQuantity = 0;
+        isStockAddModalOpen = true;
+    "
+>
+    {{ __('ui.add_stock') }}
+</button>
+
               </div>
             </td>
           </tr>
@@ -889,6 +901,7 @@
     <option value="Acqua">{{ __('ui.expense_water') }}</option>
     <option value="Luce">{{ __('ui.expense_electricity') }}</option>
     <option value="Affitto">{{ __('ui.expense_rent') }}</option>
+<option value="Gas">{{ __('ui.expense_gas') }}</option>
     <option value="internet">{{ __('ui.expense_internet') }}</option>
     <option value="Altri">{{ __('ui.expense_other') }}</option>
 </select>
@@ -1126,6 +1139,73 @@
     </div>
 </div>
 
+<!-- Modal simples de adicionar estoque -->
+<div
+  x-show="isStockAddModalOpen"
+  x-cloak
+  class="fixed inset-0 z-50 flex items-center justify-center p-4"
+  style="background-color: rgba(0,0,0,0.5);"
+  @keydown.escape.window="isStockAddModalOpen=false"
+>
+  <div
+    class="cosmic-card w-full max-w-md backdrop-blur-lg"
+    @click.outside="isStockAddModalOpen=false"
+  >
+    <div class="flex items-center justify-between p-4 border-b border-[color:var(--border)]">
+      <h2 class="text-lg font-semibold">{{ __('ui.add_stock') }}: <span x-text="stockProduct?.name ?? ''"></span></h2>
+      <button @click="isStockAddModalOpen=false" class="p-1 rounded-full hover:bg-white/10">&times;</button>
+    </div>
+
+    <form @submit.prevent="
+        if(stockQuantity > 0){
+          fetch('/admin/products/' + stockProduct.id + '/add-stock', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
+            },
+            body: JSON.stringify({ quantity: stockQuantity })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if(data.success){
+              alert('{{ __('ui.stock_added_success') }}');
+              isStockAddModalOpen = false;
+              location.reload(); // ou atualizar localmente
+            } else {
+              alert(data.message || 'Erro');
+            }
+          });
+        } else {
+          alert('{{ __('ui.enter_valid_quantity') }}');
+        }
+    ">
+      <div class="p-6 space-y-4">
+        <div>
+          <label for="stock_quantity" class="block text-sm font-medium text-[color:var(--muted)]">{{ __('ui.stock_quantity') }}</label>
+          <input
+            type="number"
+            id="stock_quantity"
+            min="1"
+            x-model.number="stockQuantity"
+            placeholder="0"
+            class="input-base mt-1 w-full"
+            :class="theme==='theme-dark' ? 'input-dark' : 'input-light'"
+            required
+          >
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 p-4 border-t border-[color:var(--border)]"
+           :class="theme==='theme-dark' ? 'bg-[rgba(2,6,23,.5)]' : 'bg-slate-50/50'">
+        <button type="button" @click="isStockAddModalOpen=false" class="btn">{{ __('ui.cancel') }}</button>
+        <button type="submit" class="btn btn-accent">{{ __('ui.add') }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
 
   <!-- MODAL: DELETE CONFIRMATION -->
   <div x-show="isDeleteModalOpen" style="display: none;" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.5);">
@@ -1220,60 +1300,6 @@
         </div>
       </div>
 
-      <!-- Quantity discounts -->
-      <div class="px-6">
-        <div class="flex items-center justify-between mb-2">
-          <h3 class="text-base font-semibold">{{ __('ui.quantity_discounts_optional') }}</h3>
-          <button type="button" class="btn text-sm" @click="addRow()">+ {{ __('ui.add_tier') }}</button>
-        </div>
-
-        <div class="overflow-x-auto border border-[color:var(--border)] rounded-xl">
-          <table class="min-w-full" style="background:transparent">
-            <thead class="text-left text-sm border-b border-[color:var(--border)] text-[color:var(--muted)]">
-              <tr>
-                <th class="px-4 py-3 w-1/3">{{ __('ui.min_quantity') }}</th>
-                <th class="px-4 py-3 w-1/3">{{ __('ui.unit_price') }} (€)</th>
-                <th class="px-4 py-3 w-1/3 text-right">{{ __('ui.remove') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <template x-if="!discounts.length">
-                <tr>
-                  <td colspan="3" class="px-4 py-6 text-center text-[color:var(--muted)]">
-                    {{ __('ui.no_discount_rows_hint') }}
-                  </td>
-                </tr>
-              </template>
-
-              <template x-for="(row, i) in discounts" :key="i">
-                <tr class="border-t border-[color:var(--border)]">
-                  <td class="px-4 py-3">
-                    <input type="number" min="1" class="input-base w-full"
-                           :class="theme==='theme-dark' ? 'input-dark' : 'input-light'"
-                           x-model="row.min_quantity"
-                           :name="`min_quantity[${i}]`"
-                           :placeholder="__('ui.example_qty')">
-                  </td>
-                  <td class="px-4 py-3">
-                    <input type="number" min="0" step="0.01" class="input-base w-full"
-                           :class="theme==='theme-dark' ? 'input-dark' : 'input-light'"
-                           x-model="row.discounted_price"
-                           :name="`discount_price[${i}]`"
-                           :placeholder="__('ui.example_price')">
-                  </td>
-                  <td class="px-4 py-3 text-right">
-                    <button class="btn text-sm" type="button" @click="removeRow(i)">{{ __('ui.remove') }}</button>
-                  </td>
-                </tr>
-              </template>
-            </tbody>
-          </table>
-        </div>
-
-        <p class="mt-3 text-xs text-[color:var(--muted)]">
-          {{ __('ui.discount_apply_hint') }}
-        </p>
-      </div>
 
       <div class="p-4 text-xs text-[color:var(--muted)] text-center">
         {{ __('ui.save_quantity_tip') }}

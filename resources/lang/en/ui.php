@@ -209,5 +209,22 @@ return [
 
     'clear_filters' => 'Clear Filters',
  
-    'expense_gas' => 'Gas'
+    'expense_gas' => 'Gas',
+
+        'add_stock' => 'Add Stock',
+    'cancel' => 'Cancel',
+    'save_stock' => 'Save Stock',
+
+    // Alertas
+    'stock_added_success' => 'Stock added successfully',
+    'enter_valid_quantity' => 'Please enter a valid quantity',
+    'stock_updated' => 'Stock updated successfully',
+
+    // Estoque / Preços
+    'manage_stock' => 'Manage Stock',
+    'stock_quantity' => 'Stock Quantity',
+    'stock_alert_level' => 'Stock Alert Level',
+    'selling_price' => 'Selling Price (€)',
+    'cost_price' => 'Cost Price (€)',
+    'save_quantity_tip' => 'Enter the quantity to save or update the stock',
 ];

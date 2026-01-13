@@ -208,6 +208,18 @@ return [
 
     'search_product' => 'Cerca prodotto o categorìa',
 
-    'clear_filters' => 'Polire i filtri'
+    'clear_filters' => 'Polire i filtri',
+     'expense_gas' => 'Gas',
+    'add_stock' => 'Aggiungi Stock',
+
+    'stock_added_success' => 'Stock aggiunto con successo',
+    'enter_valid_quantity' => 'Inserisci una quantità valida',
+    'stock_updated' => 'Stock aggiornato con successo',
+         'manage_stock' => 'Gestisci Stock',
+    'stock_quantity' => 'Quantità in Stock',
+    'stock_alert_level' => 'Livello di Allerta Stock',
+    'selling_price' => 'Prezzo di Vendita (€)',
+    'cost_price' => 'Prezzo di Costo (€)',
+    'save_quantity_tip' => 'Inserisci la quantità per salvare o aggiornare lo stock',
 
 ];

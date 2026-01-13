@@ -59,7 +59,8 @@ Route::middleware('locale')->group(function () {
                 Route::post('/expenses', [ExpenseController::class, 'store'])
         ->name('expenses.store');
         
-       
+       Route::post('/products/{product}/add-stock', [StockController::class, 'addStock'])
+    ->name('stock.add');
 
         });
 

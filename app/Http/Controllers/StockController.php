@@ -94,4 +94,27 @@ public function update(Request $request, Product $product)
 
         return back()->with('success', __('ui.price_updated_success'));
     }
+
+     public function addStock(Request $request, Product $product)
+    {
+        $data = $request->validate([
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        // Se o produto não tem estoque, cria
+        $stock = $product->stock()->firstOrCreate(
+            ['product_id' => $product->id],
+            ['quantity' => 0, 'price' => 0, 'cost_price' => 0]
+        );
+
+        // Incrementa a quantidade
+        $stock->quantity += $data['quantity'];
+        $stock->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => __('ui.stock_added_success'),
+            'new_quantity' => $stock->quantity,
+        ]);
+    }
 }

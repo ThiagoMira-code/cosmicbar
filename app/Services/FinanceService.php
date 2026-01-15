@@ -8,68 +8,88 @@ use Illuminate\Support\Facades\DB;
 class FinanceService
 {
     /**
-     * Soma despesas a partir de uma data
+     * Despesas no período
      */
-    private static function calculateExpensesFrom($startDate = null)
+    private static function expensesBetween($start, $end)
     {
-        $query = DB::table('expenses');
-
-        if ($startDate) {
-$query->whereDate('created_at', '>=', $startDate->format('Y-m-d'));
-        }
-
-        return (float) $query->sum('amount');
+        return abs(
+            DB::table('expenses')
+                ->whereBetween('expense_date', [$start, $end])
+                ->where('amount', '<', 0)
+                ->sum('amount')
+        );
     }
 
     /**
-     * Método base reutilizável
+     * Método base
      */
-   private static function calculateFrom($startDate = null)
+   private static function calculateBetween($start, $end)
 {
-    $raw = DB::table('sale_items')
+    // VENDAS
+    $salesData = DB::table('sale_items')
         ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
-        ->leftJoin('stock_items', 'stock_items.product_id', '=', 'sale_items.product_id');
+        ->leftJoin('stock_items', 'stock_items.product_id', '=', 'sale_items.product_id')
+        ->whereBetween('sales.created_at', [$start, $end])
+        ->selectRaw('
+            SUM(sale_items.price * sale_items.quantity) as vendas,
+            SUM(
+                (sale_items.price - COALESCE(stock_items.cost_price, 0))
+                * sale_items.quantity
+            ) as lucro
+        ')
+        ->first();
 
-    if ($startDate) {
-        $raw->whereDate('sales.created_at', '>=', $startDate->format('Y-m-d'));
-    }
+    $vendas = $salesData->vendas ?? 0;
+    $lucro  = $salesData->lucro ?? 0;
+    $cmv    = $vendas - $lucro;
 
-    $data = $raw->selectRaw('
-        SUM(CAST(sale_items.price AS DECIMAL(10,2)) * sale_items.quantity) as total_vendas,
-        SUM(
-            (CAST(sale_items.price AS DECIMAL(10,2)) - COALESCE(stock_items.cost_price, 0))
-            * sale_items.quantity
-        ) as lucro_liquido
-    ')->first();
+    // ENTRADAS (income)
+    $income = DB::table('expenses')
+        ->whereDate('expense_date', '>=', $start->toDateString())
+        ->whereDate('expense_date', '<=', $end->toDateString())
+        ->where('amount', '>', 0)
+        ->sum('amount');
 
-    $vendas    = $data->total_vendas ?? 0;
-    $lucro     = $data->lucro_liquido ?? 0;
-    $cmv       = $vendas - $lucro;
-    $despesas  = self::calculateExpensesFrom($startDate);
+    // DESPESAS
+    $expenses = abs(
+        DB::table('expenses')
+            ->whereDate('expense_date', '>=', $start->toDateString())
+            ->whereDate('expense_date', '<=', $end->toDateString())
+            ->where('amount', '<', 0)
+            ->sum('amount')
+    );
 
     return (object)[
-        'vendas'        => $vendas,
-        'lucro'         => $lucro,
-        'cmv'           => $cmv,              // continua exibindo
-        'despesas'      => $despesas,
-        'lucro_real'    => $vendas - $despesas, // agora lucro_real ignora CMV
-        'resultado'     => $vendas - $despesas, // resultado final sem CMV
+        'vendas'    => $vendas,
+        'income'    => $income,
+        'cmv'       => $cmv,
+        'despesas'  => $expenses,
+        'resultado' => ($vendas + $income) - $expenses,
     ];
 }
 
 
     public static function daily()
     {
-        return self::calculateFrom(Carbon::today());
+        return self::calculateBetween(
+            Carbon::today(),
+            Carbon::today()
+        );
     }
 
     public static function weekly()
     {
-        return self::calculateFrom(Carbon::now()->startOfWeek());
+        return self::calculateBetween(
+            Carbon::now()->startOfWeek(),
+            Carbon::now()->endOfWeek()
+        );
     }
 
     public static function monthly()
     {
-        return self::calculateFrom(Carbon::now()->startOfMonth());
+        return self::calculateBetween(
+            Carbon::now()->startOfMonth(),
+            Carbon::now()->endOfMonth()
+        );
     }
 }

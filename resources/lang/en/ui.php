@@ -227,4 +227,18 @@ return [
     'selling_price' => 'Selling Price (€)',
     'cost_price' => 'Cost Price (€)',
     'save_quantity_tip' => 'Enter the quantity to save or update the stock',
+
+    'new_expense' => 'New Expense',
+'new_income'  => 'New Event / Income',
+
+    'new_income' => 'New Event / Income',
+    'income_description_placeholder' => 'Event or income description',
+    'income_type_event' => 'Event',
+    'income_type_extra' => 'Extra',
+    'income_type_refund' => 'Refund',
+    'income_type_other' => 'Other',
+
+    'income' => 'Income',
+
+
 ];

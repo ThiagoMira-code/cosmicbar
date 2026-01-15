@@ -222,4 +222,17 @@ return [
     'cost_price' => 'Prezzo di Costo (€)',
     'save_quantity_tip' => 'Inserisci la quantità per salvare o aggiornare lo stock',
 
+    'new_expense' => 'Nuova Spesa',
+'new_income'  => 'Nuovo Evento / Entrata',
+
+'new_income' => 'Nuovo Evento / Entrata',
+    'income_description_placeholder' => 'Descrizione evento o entrata',
+    'income_type_event' => 'Evento',
+    'income_type_extra' => 'Extra',
+    'income_type_refund' => 'Rimborso',
+    'income_type_other' => 'Altro',
+
+    'income' => 'Ricavi',   // mais contábil
+
+
 ];

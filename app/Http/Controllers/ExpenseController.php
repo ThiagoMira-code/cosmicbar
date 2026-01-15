@@ -14,19 +14,23 @@ class ExpenseController extends Controller
             'description'  => 'required|string|max:255',
             'category'     => 'required|string',
             'amount'       => 'required|numeric|min:0',
+            'is_income'    => 'nullable|boolean',
         ]);
 
-       Expense::create([
-    'user_id'      => auth()->id(), // 🔥 AQUI
-    'expense_date' => $request->expense_date,
-    'description'  => $request->description,
-    'category'     => $request->category,
-    'type'         => 'variable', // ou 'fixed'
-    'amount'       => $request->amount,
-]);
+        // 🔥 income = valor positivo | expense = valor negativo
+        $amount = $request->boolean('is_income')
+            ? abs($request->amount)     // ENTRADA
+            : -abs($request->amount);   // SAÍDA
 
+        Expense::create([
+            'user_id'      => auth()->id(),
+            'expense_date' => $request->expense_date,
+            'description'  => $request->description,
+            'category'     => $request->category,
+            'amount'       => $amount,
+        ]);
 
-return redirect()->back()->with('success', __('ui.expense_created_success'));
+        return redirect()->back()
+            ->with('success', __('ui.expense_created_success'));
     }
 }
-

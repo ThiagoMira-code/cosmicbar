@@ -9,7 +9,157 @@
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <style>
     /* Seus estilos CSS permanecem os mesmos */
-    :root{--bg:#0f0b17;--text:#e5e7eb;--muted:#94a3b8;--card:rgba(15,23,42,0.6);--border:rgba(255,255,255,0.1);--chip-ok-bg:rgba(16,185,129,0.18);--chip-ok-bd:rgba(16,185,129,0.35);--chip-warn-bg:rgba(251,191,36,0.18);--chip-warn-bd:rgba(251,191,36,0.35);--accent-a:#ffd166;--accent-b:#38bdf8;--shadow:0 10px 30px rgba(2,6,23,.35)}.theme-dark{--bg:#0f0b17;--text:#e5e7eb;--muted:#94a3b8;--card:rgba(15,23,42,0.6);--border:rgba(255,255,255,.1);--shadow:0 10px 30px rgba(2,6,23,.35)}.theme-light{--bg:#fff;--text:#0f172a;--muted:#475569;--card:rgba(255,255,255,0.75);--border:rgba(2,6,23,.1);--shadow:0 6px 20px rgba(2,6,23,.1)}.bg-stars{background:radial-gradient(2px 2px at 20% 30%,#fff8 50%,transparent 51%) 0 0/120px 120px,radial-gradient(1.5px 1.5px at 60% 70%,#fff6 50%,transparent 51%) 0 0/100px 100px,radial-gradient(1px 1px at 80% 20%,#fff5 50%,transparent 51%) 0 0/140px 140px,var(--bg);animation:twinkle 8s linear infinite}.bg-stars-light{background:radial-gradient(2px 2px at 20% 30%,#94a3b830 50%,transparent 51%) 0 0/140px 140px,radial-gradient(1.5px 1.5px at 65% 75%,#94a3b826 50%,transparent 51%) 0 0/120px 120px,radial-gradient(1px 1px at 80% 20%,#94a3b820 50%,transparent 51%) 0 0/160px 160px,var(--bg);animation:twinkle 10s linear infinite}@keyframes twinkle{to{background-position:140px 140px,120px 120px,160px 160px,0 0}}.cosmic-card{background:var(--card);border:1px solid var(--border);border-radius:1rem;box-shadow:var(--shadow)}.btn{border-radius:.75rem;padding:.5rem .75rem;border:1px solid var(--border);background:rgba(2,6,23,.5);color:var(--text)}.btn:hover{background:rgba(2,6,23,.65)}.btn-accent{background:linear-gradient(90deg,var(--accent-a),var(--accent-b));color:#0f172a;font-weight:600;border:0}.chip-ok{background:var(--chip-ok-bg);border:1px solid var(--chip-ok-bd);color:#d1fae5;border-radius:999px;padding:.25rem .5rem;font-size:.75rem}.chip-warn{background:var(--chip-warn-bg);border:1px solid var(--chip-warn-bd);color:#fde68a;border-radius:999px;padding:.25rem .5rem;font-size:.75rem}.input-base{border-radius:.75rem;border:1px solid var(--border);width:100%;padding:.5rem .75rem}.input-base:focus{outline:2px solid var(--accent-b);outline-offset:2px}.input-dark{background:rgba(2,6,23,.5);color:var(--text)}.input-light{background:rgba(255,255,255,0.7);color:var(--text)}
+:root{
+  --bg:#0f0b17;
+  --text:#e5e7eb;
+  --muted:#94a3b8;
+  --card:rgba(15,23,42,0.6);
+  --border:rgba(255,255,255,0.1);
+
+  /* chips – dark */
+  --chip-ok-bg:rgba(16,185,129,0.18);
+  --chip-ok-bd:rgba(16,185,129,0.35);
+  --chip-ok-text:#d1fae5;
+
+  --chip-warn-bg:rgba(251,191,36,0.18);
+  --chip-warn-bd:rgba(251,191,36,0.35);
+  --chip-warn-text:#fde68a;
+
+  --accent-a:#ffd166;
+  --accent-b:#38bdf8;
+  --shadow:0 10px 30px rgba(2,6,23,.35);
+}
+
+/* DARK */
+.theme-dark{
+  --bg:#0f0b17;
+  --text:#e5e7eb;
+  --muted:#94a3b8;
+  --card:rgba(15,23,42,0.6);
+  --border:rgba(255,255,255,.1);
+  --shadow:0 10px 30px rgba(2,6,23,.35);
+}
+
+/* LIGHT – colorido suave */
+.theme-light{
+  --bg:#fff;
+  --text:#0f172a;
+  --muted:#475569;
+  --card:rgba(255,255,255,0.75);
+  --border:rgba(2,6,23,.1);
+  --shadow:0 6px 20px rgba(2,6,23,.1);
+
+  /* chips – light */
+  --chip-ok-bg:#ecfdf5;     /* verde pastel */
+  --chip-ok-bd:#6ee7b7;
+  --chip-ok-text:#065f46;
+
+  --chip-warn-bg:#fff7ed;   /* laranja pastel */
+  --chip-warn-bd:#fdba74;
+  --chip-warn-text:#9a3412;
+}
+
+/* backgrounds */
+.bg-stars{
+  background:
+    radial-gradient(2px 2px at 20% 30%,#fff8 50%,transparent 51%) 0 0/120px 120px,
+    radial-gradient(1.5px 1.5px at 60% 70%,#fff6 50%,transparent 51%) 0 0/100px 100px,
+    radial-gradient(1px 1px at 80% 20%,#fff5 50%,transparent 51%) 0 0/140px 140px,
+    var(--bg);
+  animation:twinkle 8s linear infinite;
+}
+
+.bg-stars-light{
+  background:
+    radial-gradient(2px 2px at 20% 30%,#94a3b830 50%,transparent 51%) 0 0/140px 140px,
+    radial-gradient(1.5px 1.5px at 65% 75%,#94a3b826 50%,transparent 51%) 0 0/120px 120px,
+    radial-gradient(1px 1px at 80% 20%,#94a3b820 50%,transparent 51%) 0 0/160px 160px,
+    var(--bg);
+  animation:twinkle 10s linear infinite;
+}
+
+@keyframes twinkle{
+  to{background-position:140px 140px,120px 120px,160px 160px,0 0}
+}
+
+/* UI */
+.cosmic-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:1rem;
+  box-shadow:var(--shadow);
+}
+
+.btn{
+  border-radius:.75rem;
+  padding:.5rem .75rem;
+  border:1px solid var(--border);
+  background:rgba(2,6,23,.5);
+  color:var(--text);
+}
+
+.btn:hover{background:rgba(2,6,23,.65)}
+
+.btn-accent{
+  background:linear-gradient(90deg,var(--accent-a),var(--accent-b));
+  color:#0f172a;
+  font-weight:600;
+  border:0;
+}
+
+/* CHIPS */
+.chip-ok{
+  background:var(--chip-ok-bg);
+  border:1px solid var(--chip-ok-bd);
+  color:var(--chip-ok-text);
+  border-radius:999px;
+  padding:.25rem .5rem;
+  font-size:.75rem;
+}
+
+.chip-warn{
+  background:var(--chip-warn-bg);
+  border:1px solid var(--chip-warn-bd);
+  color:var(--chip-warn-text);
+  border-radius:999px;
+  padding:.25rem .5rem;
+  font-size:.75rem;
+}
+
+/* inputs */
+.input-base{
+  border-radius:.75rem;
+  border:1px solid var(--border);
+  width:100%;
+  padding:.5rem .75rem;
+}
+
+.input-base:focus{
+  outline:2px solid var(--accent-b);
+  outline-offset:2px;
+}
+
+.input-dark{
+  background:rgba(2,6,23,.5);
+  color:var(--text);
+}
+
+.input-light{
+  background:rgba(255,255,255,0.7);
+  color:var(--text);
+}
+
+@media (prefers-color-scheme: dark) {
+    .chip-ok {
+        background-color: #064e3b;
+        color: #d1fae5;
+    }
+
+    .chip-warn {
+        background-color: #7f1d1d;
+        color: #fee2e2;
+    }
+}
   </style>
 </head>
 
@@ -33,6 +183,7 @@
 
     /* 💰 FINANCE */
     openExpenseModal: false,
+    openIncomeModal: false,
     showDetailedList: false,
 
     /* 📦 STOCK */
@@ -675,12 +826,20 @@
 
        <div class="flex gap-2">
         <!-- note este botão -->
-        <button 
-            @click="openExpenseModal = true"
-            class="text-xs bg-green-600/20 hover:bg-green-600/40 text-green-400 px-3 py-1 rounded-lg border border-green-500/30 transition"
-        >
-            ➕ New Expense
-        </button>
+<button 
+    @click="openExpenseModal = true"
+    class="text-xs bg-green-600/20 hover:bg-green-600/40 text-green-400 px-3 py-1 rounded-lg border border-green-500/30 transition"
+>
+    ➕ {{ __('ui.new_expense') }}
+</button>
+
+<button 
+    @click="openIncomeModal = true"
+    class="text-xs bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 px-3 py-1 rounded-lg border border-blue-500/30 transition"
+>
+    ➕ {{ __('ui.new_income') }}
+</button>
+
 
         <button 
             @click="showDetailedList = !showDetailedList"
@@ -710,6 +869,11 @@
         <p>💰 {{ __('ui.sales') }}: €{{ number_format($financeStats['diario']->vendas,2,',','.') }}</p>
         <p class="text-orange-400">📦 CMV: €{{ number_format($financeStats['diario']->cmv,2,',','.') }}</p>
         <p class="text-red-400">💡 {{ __('ui.expenses') }}: €{{ number_format($financeStats['diario']->despesas,2,',','.') }}</p>
+        <p class="text-green-400">
+    💸 {{ __('ui.income') }}:
+    €{{ number_format($totalIncomeMonth, 2, ',', '.') }}
+</p>
+
     </div>
 </div>
 
@@ -730,6 +894,10 @@
         <p>💰 {{ __('ui.sales') }}: €{{ number_format($financeStats['semanal']->vendas,2,',','.') }}</p>
         <p class="text-orange-400">📦 CMV: €{{ number_format($financeStats['semanal']->cmv,2,',','.') }}</p>
         <p class="text-red-400">💡 {{ __('ui.expenses') }}: €{{ number_format($financeStats['semanal']->despesas,2,',','.') }}</p>
+         <p class="text-green-400">
+    💸 {{ __('ui.income') }}:
+    €{{ number_format($totalIncomeMonth, 2, ',', '.') }}
+</p>
     </div>
 </div>
 
@@ -761,6 +929,10 @@
         <p class="text-red-400">
             💡 {{ __('ui.expenses') }}: €{{ number_format($financeStats['mensal']->despesas,2,',','.') }}
         </p>
+         <p class="text-green-400">
+    💸 {{ __('ui.income') }}:
+    €{{ number_format($totalIncomeMonth, 2, ',', '.') }}
+</p>
     </div>
 </div>
 
@@ -927,6 +1099,77 @@
                 <button 
                     type="submit"
                     class="text-sm bg-green-600 px-4 py-1 rounded text-white"
+                >
+                    {{ __('ui.save') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div 
+    x-show="openIncomeModal" 
+    x-transition 
+    class="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+>
+    <div class="bg-[#0f172a] rounded-xl p-6 w-full max-w-md">
+        <h3 class="text-white font-semibold mb-4">
+            ➕ {{ __('ui.new_income') }}
+        </h3>
+
+        <form method="POST" action="{{ route('admin.expenses.store') }}" class="space-y-3">
+            @csrf
+
+            <!-- 🔥 indica que isso SOMA -->
+    <input type="hidden" name="is_income" value="1">
+
+            <input 
+                type="date" 
+                name="expense_date" 
+                required 
+                class="w-full rounded bg-white/10 text-white p-2"
+            >
+
+            <input 
+                type="text" 
+                name="description" 
+                placeholder="{{ __('ui.income_description_placeholder') }}"
+                required 
+                class="w-full rounded bg-white/10 text-white p-2"
+            >
+
+            <!-- reutiliza category -->
+            <select 
+                name="category" 
+                class="w-full rounded bg-gray-800 text-white p-2 border border-gray-700"
+            >
+                <option value="event">{{ __('ui.income_type_event') }}</option>
+                <option value="extra">{{ __('ui.income_type_extra') }}</option>
+                <option value="refund">{{ __('ui.income_type_refund') }}</option>
+                <option value="other">{{ __('ui.income_type_other') }}</option>
+            </select>
+
+            <input 
+                type="number" 
+                step="0.01" 
+                name="amount"
+                placeholder="{{ __('ui.amount') }} €"
+                required 
+                class="w-full rounded bg-white/10 text-white p-2"
+            >
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button 
+                    type="button" 
+                    @click="openIncomeModal = false"
+                    class="text-sm px-3 py-1 text-gray-300"
+                >
+                    {{ __('ui.cancel') }}
+                </button>
+
+                <button 
+                    type="submit"
+                    class="text-sm bg-blue-600 px-4 py-1 rounded text-white"
                 >
                     {{ __('ui.save') }}
                 </button>
@@ -1428,25 +1671,67 @@ document.addEventListener('DOMContentLoaded', () => {
 
     });
 
+const centerTextPlugin = {
+    id: 'centerText',
+    beforeDraw(chart) {
+        const { ctx, chartArea } = chart;
+        const data = chart.data.datasets[0].data;
+
+        const total = data.reduce((a, b) => a + Math.abs(b), 0);
+
+        const x = (chartArea.left + chartArea.right) / 2;
+        const y = (chartArea.top + chartArea.bottom) / 2;
+
+        ctx.save();
+
+        // sombra leve (🔥 diferença total)
+        ctx.shadowColor = 'rgba(0,0,0,0.6)';
+        ctx.shadowBlur = 8;
+
+        // título
+        ctx.font = '500 13px Inter, system-ui, sans-serif';
+        ctx.fillStyle = '#e5e7eb'; // cinza claro
+        ctx.textAlign = 'center';
+        ctx.fillText('Total Expenses', x, y - 18);
+
+        // valor
+        ctx.font = '700 24px Inter, system-ui, sans-serif';
+        ctx.fillStyle = '#ffffff'; // branco puro
+        ctx.fillText(`€ ${total.toFixed(2)}`, x, y + 6);
+
+        ctx.restore();
+    }
+};
+
+
+
+
     // 🔹 Despesas por Categoria
     new Chart(document.getElementById('expenseCategoryChart'), {
-        type: 'doughnut',
-        data: {
-            labels: {!! json_encode($expensesMonth->groupBy('category')->keys()) !!},
-            datasets: [{
-                data: {!! json_encode(
-                    $expensesMonth->groupBy('category')->map->sum('amount')->values()
-                ) !!},
-                backgroundColor: [
-                    '#ef4444', '#f97316', '#eab308',
-                    '#22c55e', '#06b6d4', '#6366f1'
-                ]
-            }]
-        },
-        options: {
-            responsive: true
+    type: 'doughnut',
+    data: {
+        labels: {!! json_encode($expensesMonth->groupBy('category')->keys()) !!},
+        datasets: [{
+            data: {!! json_encode(
+                $expensesMonth->groupBy('category')->map->sum('amount')->values()
+            ) !!},
+            backgroundColor: [
+                '#ef4444', '#f97316', '#eab308',
+                '#22c55e', '#06b6d4', '#6366f1'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        cutout: '70%', // 🔥 espaço pro texto
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
         }
-    });
+    },
+    plugins: [centerTextPlugin]
+});
 
 });
 </script>
